@@ -9,3 +9,6 @@
           :stop (conman/disconnect! *db*))
 
 (conman/bind-connection *db* "sql/queries.sql")
+
+(defn in-transaction [operations]
+  (conman/with-transaction [*db*] (operations)))

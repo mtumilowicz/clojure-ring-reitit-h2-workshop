@@ -13,11 +13,11 @@
     )
   (getAll [_] @app-state))
 
-(def inMemoryRepository (MessageInMemoryRepository.))
-
 (deftype MessageDbRepository []
   MessageRepository
-  (save! [_ obj] (db/save-message! obj))
+  (save! [_ obj] #(db/save-message! obj))
   (getAll [_] (db/get-messages)))
+
+(def inMemoryRepository (MessageInMemoryRepository.))
 
 (def dbRepository (MessageDbRepository.))

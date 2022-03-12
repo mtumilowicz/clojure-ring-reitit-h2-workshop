@@ -16,7 +16,7 @@
                   :exception ex
                   :where (str "Uncaught exception on" (.getName thread))}))))
 
-(def dependencies {:messageRepo MessageModule/inMemoryRepository})
+(def dependencies {:messageRepo MessageModule/dbRepository})
 
 (defn -main [& args]
   (mount/start #'app.infrastructure.db.config/*db*)
