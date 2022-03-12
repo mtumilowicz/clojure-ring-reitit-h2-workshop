@@ -1,5 +1,6 @@
 (ns app.domain.message.repository)
 
 (defprotocol MessageRepository
-  (save! [this messageInput])
-  (getAll [this]))
+  (save! [this message])
+  (getAll [this])
+  (deleteById [this id]))

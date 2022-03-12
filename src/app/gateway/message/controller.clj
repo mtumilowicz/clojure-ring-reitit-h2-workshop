@@ -26,4 +26,8 @@
      (fn [request-map] (saveMessage messageRepo request-map))
      :get
      (fn [_]
-       (response/ok {:result (MessageService/getAll messageRepo)}))}]])
+       (response/ok {:result (MessageService/getAll messageRepo)}))
+     :delete
+     (fn [{{:keys [id]} :body-params}]
+       (response/ok {:result (MessageService/deleteById messageRepo id)})
+       )}]])

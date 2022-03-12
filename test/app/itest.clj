@@ -9,12 +9,22 @@
 (def app (Api/handler dependencies))
 
 (deftest test-app
-  (testing "response coercion error"
+  (testing "create"
     (let [response (app (-> (request :post "/api/messages")
                               (json-body {:id 5, :message "bonjour"})))]
       (is (= 200 (:status response)))))
-  (testing "main route"
+  (testing "get"
     (let [response (app (request :get "/api/messages"))]
       (is (= 200 (:status response)))
       (is (= {:5 {:id      5
-                  :message "bonjour"}} (:result (m/decode-response-body response)))))))
+                  :message "bonjour"}} (:result (m/decode-response-body response))))))
+  (testing "delete"
+    (let [response (app (-> (request :delete "/api/messages")
+                            (json-body {:id 5})))]
+      (is (= 200 (:status response)))))
+  (testing "get"
+    (let [response (app (request :get "/api/messages"))]
+      (is (= 200 (:status response)))
+      (is (= {:5 {:id      6
+                  :message "bonjour"}} (:result (m/decode-response-body response))))))
+  )

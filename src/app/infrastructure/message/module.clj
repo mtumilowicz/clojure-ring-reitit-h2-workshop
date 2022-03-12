@@ -11,12 +11,14 @@
     (swap! app-state assoc-in [(keyword (str id))] obj)
     obj
     )
-  (getAll [_] @app-state))
+  (getAll [_] @app-state)
+  (deleteById [_ id] (swap! app-state dissoc (keyword (str id)))))
 
 (deftype MessageDbRepository []
   MessageRepository
-  (save! [_ obj] #(db/save-message! obj))
-  (getAll [_] (db/get-messages)))
+  (save! [_ obj] (db/save-message! obj))
+  (getAll [_] (db/get-messages))
+  (deleteById [_ id] (db/delete-by-id! {:id id})))
 
 (def inMemoryRepository (MessageInMemoryRepository.))
 
