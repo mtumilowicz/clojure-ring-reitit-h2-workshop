@@ -5,15 +5,16 @@
             [app.domain.person.service :as PersonService]
             [app.gateway.person.input :refer :all]
             [app.gateway.output :refer :all]
-            [clojure.core.match :refer [match]]))
+            [clojure.core.match :refer [match]]
+            [app.domain.either :refer [fold-either]]))
 
 (defn create-person [personRepository request-map]
-  (match (parse (:body-params request-map) CreatePersonApiInput)
-         [:left errors] (bad-request errors)
-         [:right valid] (->> valid
-                             (to-CreatePersonCommand)
-                             (PersonService/save personRepository)
-                             (from-domain))))
+  (fold-either (parse (:body-params request-map) CreatePersonApiInput)
+               bad-request
+               #(->> %
+                    (to-CreatePersonCommand)
+                    (PersonService/save personRepository)
+                    (from-domain-result))))
 
 (defn routes [{:keys [:personRepository]}]
   ["/api" {:middleware [wrap-formats]}

@@ -13,11 +13,11 @@
 (defn bad-request [errors]
   (response/bad-request (failure errors)))
 
-(defmulti from-domain (fn [[either _]] either))
-(defmethod from-domain :left
+(defmulti from-domain-result (fn [[either _]] either))
+(defmethod from-domain-result :left
   [[_ result]]
   (bad-request result))
 
-(defmethod from-domain :right
+(defmethod from-domain-result :right
   [[_ result]]
   (response-ok {:key "persons" :data result}))
