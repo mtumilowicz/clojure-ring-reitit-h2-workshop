@@ -1,12 +1,12 @@
 (ns app.gateway.api
   (:require [reitit.ring :as reitit]
             [ring.util.http-response :as response]
-            [app.gateway.message.controller :as MessageController]
+            [app.gateway.person.controller :as PersonController]
             [app.gateway.echo.controller :as EchoController]))
 
 (defn routes [dependencies]
   [(EchoController/routes dependencies)
-   (MessageController/routes dependencies)])
+   (PersonController/routes dependencies)])
 
 
 (defn handler [dependencies]
