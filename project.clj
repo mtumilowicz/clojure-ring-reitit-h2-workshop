@@ -18,5 +18,5 @@
                  [mount "0.1.16"]
                  [conman "0.8.4"]
                  [luminus-migrations "0.6.6"]]
-  :repl-options {:init-ns clojure-ring-reitit-h2-workshop.core}
+  :repl-options {:init-ns app.application}
   :main app.application)

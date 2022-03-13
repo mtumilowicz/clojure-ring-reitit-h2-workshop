@@ -1,18 +1,13 @@
 (ns app.gateway.message.input
   (:require
-    [struct.core :as st]))
+    [struct.core :as st]
+    [clojure.core.match :refer [match]]))
 
-(defrecord MessageApiInput [id message])
-
-(def schema-messageApiInput
+(def CreateMessageApiInput
   {:id      [st/required st/integer]
-   :message [st/required st/string]}
-  )
+   :message [st/required st/string]})
 
-(defn validate-message [params]
-  (first (st/validate params schema-messageApiInput)))
-
-(defn parse-messageApiInput [map]
-  (if-let [errors (validate-message map)]
-    [:left errors]
-    [:right (map->MessageApiInput map)]))
+(defn parse-CreateMessageApiInput [map]
+  (match (st/validate map CreateMessageApiInput)
+         [nil valid] [:right map]
+         [errors _] [:left errors]))

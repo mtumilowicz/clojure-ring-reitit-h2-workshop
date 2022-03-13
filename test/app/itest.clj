@@ -17,7 +17,7 @@
     (let [response (app (request :get "/api/messages"))]
       (is (= 200 (:status response)))
       (is (= {:5 {:id      5
-                  :message "bonjour"}} (:result (m/decode-response-body response))))))
+                  :message "bonjour"}} (-> (m/decode-response-body response) :data :messages )))))
   (testing "delete"
     (let [response (app (-> (request :delete "/api/messages")
                             (json-body {:id 5})))]
@@ -25,6 +25,5 @@
   (testing "get"
     (let [response (app (request :get "/api/messages"))]
       (is (= 200 (:status response)))
-      (is (= {:5 {:id      6
-                  :message "bonjour"}} (:result (m/decode-response-body response))))))
+      (is (= {} (-> (m/decode-response-body response) :data :messages)))))
   )
