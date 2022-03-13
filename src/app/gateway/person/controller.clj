@@ -1,14 +1,17 @@
 (ns app.gateway.person.controller
-  (:require [app.gateway.middleware :refer :all]
+  (:require
+            [app.domain.parser :refer :all]
+            [app.gateway.middleware :refer :all]
             [app.domain.person.service :as PersonService]
             [app.gateway.person.input :refer :all]
             [app.gateway.output :refer :all]
             [clojure.core.match :refer [match]]))
 
 (defn create-person [personRepository request-map]
-  (match (parse-CreatePersonApiInput (:body-params request-map))
+  (match (parse (:body-params request-map) CreatePersonApiInput)
          [:left errors] (bad-request errors)
          [:right valid] (->> valid
+                             (to-CreatePersonCommand)
                              (PersonService/save personRepository)
                              (#(response-ok {:key "persons" :data %})))))
 

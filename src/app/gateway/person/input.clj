@@ -1,14 +1,13 @@
 (ns app.gateway.person.input
   (:require
     [struct.core :as st]
-    [clojure.core.match :refer [match]]))
+    [app.domain.parser :refer :all]
+    [app.domain.person.entity :refer :all]))
 
 (def CreatePersonApiInput
   {:id      [st/required st/integer]
-   :firstName [st/required st/string]
-   :lastName [st/required st/string]})
+   :first_name [st/required st/string]
+   :last_name [st/required st/string]})
 
-(defn parse-CreatePersonApiInput [map]
-  (match (st/validate map CreatePersonApiInput)
-         [nil valid] [:right map]
-         [errors _] [:left errors]))
+(defn to-CreatePersonCommand [{:keys [id first_name last_name]}]
+  (make-CreatePersonCommand {:id id :firstName first_name :lastName last_name}))

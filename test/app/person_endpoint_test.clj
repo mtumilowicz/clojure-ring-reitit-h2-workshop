@@ -11,19 +11,22 @@
 (deftest test-app
   (testing "create"
     (let [response (app (-> (request :post "/api/persons")
-                              (json-body {:id 5, :person "bonjour"})))]
+                              (json-body {:id 5 :first_name "Michu" :last_name "Tichu"})))]
       (is (= 200 (:status response)))))
   (testing "get"
-    (let [response (app (request :get "/api/persons"))]
+    (let [response (app (request :get "/api/persons"))
+          expectedResponse {:5 {:id      5
+                                :firstName "Michu"
+                                :lastName "Tichu"}}]
       (is (= 200 (:status response)))
-      (is (= {:5 {:id      5
-                  :person "bonjour"}} (-> (m/decode-response-body response) :data :persons )))))
+      (is (= expectedResponse (-> (m/decode-response-body response) :data :persons )))))
   (testing "delete"
     (let [response (app (-> (request :delete "/api/persons")
                             (json-body {:id 5})))]
       (is (= 200 (:status response)))))
   (testing "get"
-    (let [response (app (request :get "/api/persons"))]
+    (let [response (app (request :get "/api/persons"))
+          expectedResponse {}]
       (is (= 200 (:status response)))
-      (is (= {} (-> (m/decode-response-body response) :data :persons)))))
+      (is (= expectedResponse (-> (m/decode-response-body response) :data :persons)))))
   )
