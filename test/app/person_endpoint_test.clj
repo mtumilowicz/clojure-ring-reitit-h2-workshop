@@ -7,25 +7,26 @@
 
 (def dependencies {:personRepository PersonModule/inMemoryRepository})
 (def app (Api/handler dependencies))
+(def root "/api/persons")
 
 (deftest test-app
   (testing "create"
-    (let [response (app (-> (request :post "/api/persons")
+    (let [response (app (-> (request :post root)
                               (json-body {:id 5 :first_name "Michu" :last_name "Tichu"})))]
       (is (= 200 (:status response)))))
   (testing "get"
-    (let [response (app (request :get "/api/persons"))
+    (let [response (app (request :get root))
           expectedResponse {:5 {:id      5
                                 :firstName "Michu"
                                 :lastName "Tichu"}}]
       (is (= 200 (:status response)))
       (is (= expectedResponse (-> (m/decode-response-body response) :data :persons )))))
   (testing "delete"
-    (let [response (app (-> (request :delete "/api/persons")
+    (let [response (app (-> (request :delete root)
                             (json-body {:id 5})))]
       (is (= 200 (:status response)))))
   (testing "get"
-    (let [response (app (request :get "/api/persons"))
+    (let [response (app (request :get root))
           expectedResponse {}]
       (is (= 200 (:status response)))
       (is (= expectedResponse (-> (m/decode-response-body response) :data :persons)))))

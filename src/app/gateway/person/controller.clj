@@ -13,7 +13,7 @@
          [:right valid] (->> valid
                              (to-CreatePersonCommand)
                              (PersonService/save personRepository)
-                             (#(response-ok {:key "persons" :data %})))))
+                             (from-domain))))
 
 (defn routes [{:keys [:personRepository]}]
   ["/api" {:middleware [wrap-formats]}
