@@ -1,5 +1,6 @@
 (ns app.gateway.output
-  (:require [ring.util.http-response :as response]))
+  (:require [ring.util.http-response :as response]
+            [app.domain.either :refer [fold-either]]))
 
 (defn success [key data]
   {:status "success" :data {key data}})
@@ -13,11 +14,8 @@
 (defn bad-request [errors]
   (response/bad-request (failure errors)))
 
-(defmulti from-domain-result (fn [[either _]] either))
-(defmethod from-domain-result :left
-  [[_ result]]
-  (bad-request result))
-
-(defmethod from-domain-result :right
-  [[_ result]]
-  (response-ok {:key "persons" :data result}))
+(defn from-domain-result [result]
+  (fold-either result
+               bad-request
+               #(response-ok {:key "persons" :data %}))
+  )
