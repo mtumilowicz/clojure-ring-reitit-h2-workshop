@@ -22,8 +22,7 @@
       (is (= 200 (:status response)))
       (is (= expectedResponse (-> (m/decode-response-body response) :data :persons )))))
   (testing "delete"
-    (let [response (app (-> (request :delete root)
-                            (json-body {:id 5})))]
+    (let [response (app (-> (request :delete (str root "/5"))))]
       (is (= 200 (:status response)))))
   (testing "get"
     (let [response (app (request :get root))
