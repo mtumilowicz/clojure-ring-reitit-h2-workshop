@@ -6,7 +6,7 @@
 (defn failure [errors]
   [:left errors])
 
-(defn safe-try [{:keys [operation error-message]}]
-  (try
-    [:right (operation)]
-    (catch Exception e [:left (str error-message (.getMessage e))])))
+(defmacro to-either [{:keys [operation error-message]}]
+  `(try
+     (success ~operation)
+    (catch Exception e# (failure (str ~error-message (.getMessage e#))))))
