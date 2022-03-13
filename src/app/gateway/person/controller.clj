@@ -14,7 +14,7 @@
                #(->> %
                     (to-CreatePersonCommand)
                     (PersonService/save personRepository)
-                    (from-domain-result))))
+                    (from-domain-result "persons"))))
 
 (defn routes [{:keys [:personRepository]}]
   ["/api" {:middleware [wrap-formats]}
@@ -23,8 +23,8 @@
      (fn [request-map] (create-person personRepository request-map))
      :get
      (fn [_]
-       (response-ok {:key "persons" :data (PersonService/getAll personRepository)}))
+       (response-ok "persons" (PersonService/getAll personRepository)))
      :delete
      (fn [{{:keys [id]} :body-params}]
-       (response-ok {:key "persons" :data (PersonService/deleteById personRepository id)})
+       (response-ok "persons" (PersonService/deleteById personRepository id))
        )}]])

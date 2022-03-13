@@ -8,14 +8,14 @@
 (defn failure [failures]
   {:status "fail" :data {:errors failures}})
 
-(defn response-ok [{:keys [key data]}]
+(defn response-ok [key data]
   (response/ok (success key data)))
 
 (defn bad-request [errors]
   (response/bad-request (failure errors)))
 
-(defn from-domain-result [result]
+(defn from-domain-result [key result]
   (fold-either result
                bad-request
-               #(response-ok {:key "persons" :data %}))
+               (partial response-ok key))
   )
