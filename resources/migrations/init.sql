@@ -1,3 +1,4 @@
-CREATE TABLE IF NOT EXISTS guestbook
+CREATE TABLE IF NOT EXISTS person
 (id INTEGER PRIMARY KEY,
- message VARCHAR(200));
+ first_name VARCHAR(200),
+ last_name VARCHAR(200));

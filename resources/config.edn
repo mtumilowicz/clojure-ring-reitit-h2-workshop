@@ -1,2 +1,2 @@
 {:port 3000
- :database-url "jdbc:h2:./messages.db"}
+ :database-url "jdbc:h2:./person.db"}

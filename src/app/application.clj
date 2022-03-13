@@ -7,7 +7,7 @@
             [luminus-migrations.core :as migrations]
             [mount.core :as mount]
             [clojure.tools.logging :as log]
-            [app.infrastructure.message.module :as MessageModule]))
+            [app.infrastructure.person.module :as PersonModule]))
 
 (Thread/setDefaultUncaughtExceptionHandler
   (reify Thread$UncaughtExceptionHandler
@@ -16,7 +16,7 @@
                   :exception ex
                   :where (str "Uncaught exception on" (.getName thread))}))))
 
-(def dependencies {:messageRepo MessageModule/dbRepository})
+(def dependencies {:personRepository PersonModule/dbRepository})
 
 (defn -main [& args]
   (mount/start #'app.infrastructure.db.config/*db*)
