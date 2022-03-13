@@ -1,4 +1,4 @@
--- :name create-person! :! :n
+-- :name create-person! :insert :raw
 INSERT INTO person
 (id, first_name, last_name)
 VALUES (:id, :firstName, :lastName)
