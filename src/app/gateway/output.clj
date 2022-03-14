@@ -1,6 +1,6 @@
 (ns app.gateway.output
   (:require [ring.util.http-response :as response]
-            [app.domain.either :refer [fold-either]]))
+            [app.domain.either :as either]))
 
 (defn success [key data]
   {:status "success" :data {key data}})
@@ -15,7 +15,7 @@
   (response/bad-request (failure errors)))
 
 (defn from-domain-result [key result]
-  (fold-either result
+  (either/fold result
                bad-request
                (partial response-ok key))
   )

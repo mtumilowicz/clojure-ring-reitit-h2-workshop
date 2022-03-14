@@ -6,10 +6,10 @@
     [app.gateway.person.input :refer :all]
     [app.gateway.output :refer :all]
     [clojure.core.match :refer [match]]
-    [app.domain.either :refer [fold-either]]))
+    [app.domain.either :as either]))
 
 (defn create-person [personRepository request-map]
-  (fold-either (parse (:body-params request-map) CreatePersonApiInput)
+  (either/fold (parse (:body-params request-map) CreatePersonApiInput)
                bad-request
                #(->> %
                      (to-CreatePersonCommand)

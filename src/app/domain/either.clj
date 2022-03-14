@@ -1,20 +1,20 @@
 (ns app.domain.either)
 
-(defn success [result]
+(defn right [result]
   [:right result])
 
-(defn failure [errors]
+(defn left [errors]
   [:left errors])
 
-(defmulti fold-either (fn [[either _] _ _] either))
-(defmethod fold-either :left
+(defmulti fold (fn [[either _] _ _] either))
+(defmethod fold :left
   [[_ result] handle-left _]
   (handle-left result))
-(defmethod fold-either :right
+(defmethod fold :right
   [[_ result] _ handle-right]
   (handle-right result))
 
-(defmacro to-either [{:keys [operation error-message]}]
+(defmacro safe-execute [{:keys [operation error-message]}]
   `(try
-     (success ~operation)
-    (catch Exception e# (failure (str ~error-message (.getMessage e#))))))
+     (right ~operation)
+     (catch Exception e# (left (str ~error-message (.getMessage e#))))))

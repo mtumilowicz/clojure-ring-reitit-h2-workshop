@@ -2,9 +2,9 @@
   (:require
     [struct.core :as st]
     [clojure.core.match :refer [match]]
-    [app.domain.either :refer :all]))
+    [app.domain.either :as either]))
 
 (defn parse [map schema]
   (match (st/validate map schema)
-         [nil valid] (success map)
-         [errors _] (failure errors)))
+         [nil valid] (either/right map)
+         [errors _] (either/left errors)))
