@@ -1,18 +1,36 @@
-(ns app.domain.either)
+(ns app.domain.either
+  (:require [clojure.core.match :refer [match]]))
 
-(defn right [result]
-  [:right result])
+(defn right [value]
+  [:right value])
 
 (defn left [errors]
   [:left errors])
 
-(defmulti fold (fn [[either _] _ _] either))
+(defn get-tag [this]
+  (first this))
+
+(defn get-result [this]
+  (second this))
+
+(defn transform [mapping this]
+ (mapping (get-result this)))
+
+(defmulti fold (fn [_ _ this] (get-tag this)))
 (defmethod fold :left
-  [[_ result] handle-left _]
-  (handle-left result))
+  [handle-left _ this]
+  (transform handle-left this))
 (defmethod fold :right
-  [[_ result] _ handle-right]
-  (handle-right result))
+  [_ handle-right this]
+  (transform handle-right this))
+
+(defn flat-map [mapping this]
+  (match this
+         [:left _] this
+         [:right value] (mapping value)))
+
+(defn map [mapping this]
+  (flat-map (comp right mapping) this))
 
 (defmacro safe-execute [{:keys [operation error-message]}]
   `(try

@@ -9,18 +9,18 @@
     [app.domain.either :as either]))
 
 (defn create-person [personRepository request-map]
-  (either/fold (parse (:body-params request-map) CreatePersonApiInput)
-               bad-request
-               #(->> %
-                     (to-CreatePersonCommand)
-                     (PersonService/save personRepository)
-                     (from-domain-result "persons"))))
+  (->> (parse (:body-params request-map) CreatePersonApiInput)
+       (either/map to-CreatePersonCommand)
+       (either/flat-map #(PersonService/save personRepository %))
+       (from-domain-result "persons")))
 
 (defn routes [{:keys [:personRepository]}]
   ["/api" {:middleware [wrap-formats]}
    ["/persons"
     {:post
-     (fn [request-map] (create-person personRepository request-map))
+     (fn [request-map]
+       (create-person personRepository request-map)
+       )
      :get
      (fn [_]
        (response-ok "persons" (PersonService/getAll personRepository)))}]

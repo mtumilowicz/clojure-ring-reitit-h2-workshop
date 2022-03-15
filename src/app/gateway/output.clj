@@ -15,7 +15,7 @@
   (response/bad-request (failure errors)))
 
 (defn from-domain-result [key result]
-  (either/fold result
-               bad-request
-               (partial response-ok key))
+  (either/fold bad-request
+               (partial response-ok key)
+               result)
   )

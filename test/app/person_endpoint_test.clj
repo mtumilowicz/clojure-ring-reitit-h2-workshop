@@ -28,5 +28,4 @@
     (let [response (app (request :get root))
           expectedResponse {}]
       (is (= 200 (:status response)))
-      (is (= expectedResponse (-> (m/decode-response-body response) :data :persons)))))
-  )
+      (is (= expectedResponse (-> (m/decode-response-body response) :data :persons))))))
