@@ -9,14 +9,16 @@
 (deftype PersonInMemoryRepository []
   PersonRepository
   (save! [_ {:keys [id] :as obj}]
-    (either/safe-execute {:operation (swap! app-state assoc-in [(keyword (str id))] obj) :error-message "error while creating person: "}))
+    (either/safe-execute {:operation     (swap! app-state assoc-in [(keyword (str id))] obj)
+                          :error-message "error while creating person: "}))
   (getAll [_] @app-state)
   (deleteById [_ id] (swap! app-state dissoc (keyword (str id)))))
 
 (deftype PersonDbRepository []
   PersonRepository
   (save! [_ obj]
-    (either/safe-execute {:operation (db/create-person! obj) :error-message "error while creating person: "}))
+    (either/safe-execute {:operation     (db/create-person! obj)
+                          :error-message "error while creating person: "}))
   (getAll [_] (db/get-persons))
   (deleteById [_ id] (db/delete-by-id! {:id id})))
 
