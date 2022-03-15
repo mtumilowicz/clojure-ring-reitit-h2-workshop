@@ -1,27 +1,8 @@
 (ns app.infrastructure.person.module
   (:require
-    [app.domain.person.repository :refer [PersonRepository]]
-    [app.infrastructure.db.config :refer [*db*] :as db]
-    [app.domain.either :as either]))
+    [app.infrastructure.person.repository.inmemory :as PersonInMemoryRepository]
+    [app.infrastructure.person.repository.db :as PersonDbRepository]))
 
-(def app-state (atom {}))
+(def inMemoryRepository (PersonInMemoryRepository/create))
 
-(deftype PersonInMemoryRepository []
-  PersonRepository
-  (save! [_ {:keys [id] :as obj}]
-    (either/safe-execute {:operation     (swap! app-state assoc-in [(keyword (str id))] obj)
-                          :error-message "error while creating person: "}))
-  (getAll [_] @app-state)
-  (deleteById [_ id] (swap! app-state dissoc (keyword (str id)))))
-
-(deftype PersonDbRepository []
-  PersonRepository
-  (save! [_ obj]
-    (either/safe-execute {:operation     (db/create-person! obj)
-                          :error-message "error while creating person: "}))
-  (getAll [_] (db/get-persons))
-  (deleteById [_ id] (db/delete-by-id! {:id id})))
-
-(def inMemoryRepository (PersonInMemoryRepository.))
-
-(def dbRepository (PersonDbRepository.))
+(def dbRepository (PersonDbRepository/create))

@@ -2,6 +2,10 @@
   (:require
     [struct.core :as st]))
 
+(defn Person [{:keys [id firstName lastName]}]
+  {:id id :firstName firstName :lastName lastName }
+  )
+
 (def CreatePersonCommand
   {:id      [st/required st/integer]
    :firstName [st/required st/string]

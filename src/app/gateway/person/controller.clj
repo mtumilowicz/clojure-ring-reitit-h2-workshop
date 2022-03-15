@@ -12,7 +12,7 @@
   (->> (Parser/parse (:body-params request-map) ApiInput/CreatePersonApiInput)
        (either/map ApiInput/to-CreatePersonCommand)
        (either/flat-map #(PersonService/save personRepository %))
-       (from-domain-result "persons")))
+       (from-domain-result "person")))
 
 (defn routes [{:keys [:personRepository]}]
   ["/api" {:middleware [wrap-formats]}
@@ -27,5 +27,5 @@
    ["/persons/:id"
     {:delete
      (fn [{{:keys [id]} :path-params}]
-       (response-ok "persons" (PersonService/deleteById personRepository id)))}
+       (response-ok "person" (PersonService/deleteById personRepository (Integer/parseInt id))))}
     ]])
