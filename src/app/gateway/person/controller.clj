@@ -11,7 +11,7 @@
 (defn create-person [personRepository idService request-map]
   (->> request-map
        (:body-params)
-       (Parser/parse ApiInput/NewPersonApiInput)
+       (Parser/parse ApiInput/NewPersonApiInputSchema)
        (either/map ApiInput/to-NewPersonCommand)
        (either/flat-map #(PersonService/save personRepository idService %))
        (from-domain-result "person")))

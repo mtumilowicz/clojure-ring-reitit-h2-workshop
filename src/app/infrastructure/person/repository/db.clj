@@ -7,7 +7,7 @@
 
 (defn dbPerson-toDomain [dbPerson]
   (entity/Person (clojure.set/rename-keys dbPerson {:first_name :firstName
-                                        :last_name  :lastName})))
+                                                    :last_name  :lastName})))
 
 (deftype PersonDbRepository []
   PersonRepository

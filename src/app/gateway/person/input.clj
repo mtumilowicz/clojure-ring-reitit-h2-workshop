@@ -3,7 +3,7 @@
     [struct.core :as st]
     [app.domain.person.entity :as Entity]))
 
-(def NewPersonApiInput
+(def NewPersonApiInputSchema
   {:first_name [st/required st/string]
    :last_name  [st/required st/string]})
 

@@ -14,7 +14,7 @@
   (second this))
 
 (defn transform [mapping this]
- (mapping (get-result this)))
+  (mapping (get-result this)))
 
 (defmulti fold (fn [_ _ this] (get-tag this)))
 (defmethod fold :left
