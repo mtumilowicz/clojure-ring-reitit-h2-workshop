@@ -4,7 +4,7 @@
     [clojure.core.match :refer [match]]
     [app.domain.either :as either]))
 
-(defn parse [map schema]
+(defn parse [schema map]
   (match (st/validate map schema)
          [nil valid] (either/right map)
          [errors _] (either/left errors)))

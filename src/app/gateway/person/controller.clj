@@ -9,7 +9,9 @@
     [app.domain.either :as either]))
 
 (defn create-person [personRepository idService request-map]
-  (->> (Parser/parse (:body-params request-map) ApiInput/NewPersonApiInput)
+  (->> request-map
+       (:body-params)
+       (Parser/parse ApiInput/NewPersonApiInput)
        (either/map ApiInput/to-NewPersonCommand)
        (either/flat-map #(PersonService/save personRepository idService %))
        (from-domain-result "person")))

@@ -7,10 +7,9 @@
   )
 
 (def NewPersonCommandSchema
-  {:id      [st/required st/integer]
-   :firstName [st/required st/string]
+  {:firstName [st/required st/string]
    :lastName [st/required st/string]}
   )
 
-(defn NewPersonCommand [{:keys [id firstName lastName]}]
-  {:id id :firstName firstName :lastName lastName})
+(defn NewPersonCommand [{:keys [firstName lastName]}]
+  {:firstName firstName :lastName lastName})
