@@ -6,11 +6,11 @@
   {:id id :firstName firstName :lastName lastName }
   )
 
-(def CreatePersonCommand
+(def NewPersonCommandSchema
   {:id      [st/required st/integer]
    :firstName [st/required st/string]
    :lastName [st/required st/string]}
   )
 
-(defn make-CreatePersonCommand [{:keys [id firstName lastName]}]
+(defn NewPersonCommand [{:keys [id firstName lastName]}]
   {:id id :firstName firstName :lastName lastName})
