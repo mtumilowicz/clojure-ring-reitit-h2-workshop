@@ -3,10 +3,10 @@
     [app.domain.person.repository :refer [PersonRepository]]
     [app.infrastructure.db.config :refer [*db*] :as db]
     [app.domain.either :as either]
-    [app.domain.person.entity :as entity]))
+    [app.domain.person.person :as Person]))
 
 (defn dbPerson-toDomain [dbPerson]
-  (entity/Person (clojure.set/rename-keys dbPerson {:first_name :firstName
+  (Person/create (clojure.set/rename-keys dbPerson {:first_name :firstName
                                                     :last_name  :lastName})))
 
 (deftype PersonDbRepository []
