@@ -8,3 +8,5 @@
 * https://pragprog.com/titles/dswdcloj3/web-development-with-clojure-third-edition/
 * https://pragprog.com/titles/shcloj3/programming-clojure-third-edition/
 * https://www.manning.com/books/the-joy-of-clojure-second-edition
+
+1. for validation use: [prismatic/schema "0.4.3"]
