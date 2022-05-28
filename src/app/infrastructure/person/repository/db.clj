@@ -6,7 +6,7 @@
     [app.domain.person.person :as Person]))
 
 (defn dbPerson-toDomain [dbPerson]
-  (Person/create (clojure.set/rename-keys dbPerson {:first_name :firstName
+  (Person/map->Person (clojure.set/rename-keys dbPerson {:first_name :firstName
                                                     :last_name  :lastName})))
 
 (deftype PersonDbRepository []

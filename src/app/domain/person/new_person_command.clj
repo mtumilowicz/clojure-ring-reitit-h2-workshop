@@ -6,8 +6,7 @@
   {:firstName [st/required st/string]
    :lastName  [st/required st/string]})
 
-(defn create [{:keys [firstName lastName]}]
-  {:firstName firstName :lastName lastName})
+(defrecord NewPersonCommand [firstName lastName])
 
 (defn assign-id [id newPersonCommand]
   (merge newPersonCommand {:id id}))

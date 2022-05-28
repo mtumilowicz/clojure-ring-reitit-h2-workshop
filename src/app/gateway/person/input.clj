@@ -8,5 +8,5 @@
    :last_name  [st/required st/string]})
 
 (defn to-NewPersonCommand [newPersonApiInput]
-  (NewPersonCommand/create (clojure.set/rename-keys newPersonApiInput {:first_name :firstName
+  (NewPersonCommand/map->NewPersonCommand (clojure.set/rename-keys newPersonApiInput {:first_name :firstName
                                                                        :last_name  :lastName})))

@@ -21,8 +21,7 @@
    ["/persons"
     {:post
      (fn [request-map]
-       (create-person dependencies request-map)
-       )
+       (create-person dependencies request-map))
      :get
      (fn [_]
        (response-ok "persons" (PersonService/getAll dependencies)))}]
