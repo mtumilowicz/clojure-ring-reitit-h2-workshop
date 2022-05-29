@@ -13,6 +13,7 @@
     * https://clojuredocs.org/clojure.core
     * https://github.com/ring-clojure/ring
     * https://metosin.github.io/muuntaja
+    * https://github.com/metosin/reitit
 
 ## ring
 * is a Clojure web applications library
@@ -57,14 +58,60 @@ your application more difficult
                 * `:query-params` - A map of parameters from the query string
                 * `:form-params` - A map of parameters from submitted form data
                 * `:params` - A merged map of all parameters
-
+            * `:query-string "q=clojure"` is transformed into `:query-params {"q" "clojure"}`
+## reitit
+* fast data-driven router for Clojure
+* routes are defined as vectors of String path and optional (non-sequential) route argument
+* paths can have path-parameters (:id) or catch-all-parameters (*path)
+* example
+    ```
+    ["/api"
+     ["/admin" {:middleware [middleware-wrappers...]}
+      ["" admin-handler]
+      ["/db" db-handler]]
+     ["/ping" ping-handler]]
+    ```
+    and with router
+    ```
+    (def router
+      (r/router routes))
+    ```
+* coercion
+    * is a process of transforming parameters (and responses) from one format into another
+    * by default, all wildcard and catch-all parameters are parsed into strings
+    * problem
+        ```
+        (def router
+          (r/router
+            ["/:company/users/:user-id" ::user-view])) // :path-params {:company "metosin", :user-id "123"},
+        ```
+        but we would like to treat user-id as a number, so
+        ```
+        (def router
+          (r/router
+            ["/:company/users/:user-id" {:name ::user-view // {:path {:company "metosin", :user-id 123}}
+                                         :coercion reitit.coercion.schema/coercion
+                                         :parameters {:path {:company s/Str
+                                                             :user-id s/Int}}}]
+            {:compile coercion/compile-request-coercers}))
+        ```
+* default handlers
+    ```
+    (reitit/create-default-handler
+          {:not-found
+           (constantly (response/not-found "404 - Page not found"))
+           :method-not-allowed
+           (constantly (response/method-not-allowed "405 - Not allowed"))
+           :not-acceptable
+           (constantly (response/not-acceptable "406 - Not acceptable"))})))
+    ```
 * records
 * leiningen
 * atom
 * namespaces
     * (:require [clojure.core.match :refer [match]])
 * threads
-    * ->>
+    * ->>, ->, some->, some->>
     * https://clojuredocs.org/clojure.core/-%3E%3E
 * .edn
 * overriding
@@ -76,6 +123,8 @@ your application more difficult
     * clojure.set/rename-keys
     * constantly, #()
     * keyword
+    * if-let
+    * nil
 * destructuring
     * [{:keys
     * ->> request-map (:body-params)
