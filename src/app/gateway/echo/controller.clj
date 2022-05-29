@@ -1,8 +1,11 @@
 (ns app.gateway.echo.controller
-  (:require [ring.util.http-response :as response]))
+  (:require
+    [ring.util.http-response :as response]
+    [app.gateway.middleware :refer [wrap-params]]))
 
 (defn routes [_]
   ["/echo/:id"
-   {:get
-    (fn [{{:keys [id]} :path-params}]
-      (response/ok (str "<p>the value is: " id "</p>")))}])
+   { :middleware [wrap-params]
+    :get
+    (fn [request-map]
+      (response/ok (str "path-params: " (:path-params request-map) ", query params: " (:query-params request-map))))}])
