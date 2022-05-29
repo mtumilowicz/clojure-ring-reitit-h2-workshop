@@ -11,12 +11,54 @@
     * https://www.manning.com/books/the-joy-of-clojure-second-edition
     * https://pragprog.com/titles/vmclojeco/clojure-applied/
     * https://clojuredocs.org/clojure.core
+    * https://github.com/ring-clojure/ring
+    * https://metosin.github.io/muuntaja
 
-* middleware
-    * wrap-formats
+## ring
+* is a Clojure web applications library
+* higher level frameworks such as Compojure or lib-noir use Ring as a common basis
+* without a basic understanding of Ring, you cannot write middleware, and you may find debugging
+your application more difficult
+* supports synchronous and asynchronous endpoints and middleware
+    * we focus here only on synchronous part
+* A web application developed for Ring consists of four components:
+    * Handler
+        * **synchronous** handlers
+            ```
+            (defn what-is-my-ip [request]
+              {:status 200
+               :headers {"Content-Type" "text/plain"}
+               :body (:remote-addr request)})
+            ```
+    * Request
+        * represented by Clojure maps
+        * some standard keys: `:headers`, `:body`, `:content-type`, `:path-params`
+    * Response
+        * is created by the handler, and contains three keys: `:status`, `:headers`, `:body`
+    * Middleware
+        * higher-level functions that add additional functionality to handlers
+        * first argument of a middleware function should be a handler, and its return value should be a new
+        handler function that will call the original handler
+        * threading macro (->) can be used to chain middleware together
+            ```
+            (def app
+              (-> handler
+                  (wrap-content-type "text/html")
+                  (wrap-keyword-params)
+                  (wrap-params)))
+            ```
+        * muuntaja/wrap-formats
+            * negotiates a request body based on accept, accept-charset and content-type headers and decodes the body
+            with an attached Muuntaja instance into `:body-params`
+            * encodes also the response body
+        * query params
+            * `[app.gateway.middleware :refer [wrap-params]`
+            * adds three new keys to the request map:
+                * `:query-params` - A map of parameters from the query string
+                * `:form-params` - A map of parameters from submitted form data
+                * `:params` - A merged map of all parameters
+
 * records
-* ring
-* reitit
 * leiningen
 * atom
 * namespaces
