@@ -17,7 +17,7 @@
        (from-domain-result "person")))
 
 (defn routes [dependencies]
-  ["/api" {:middleware [wrap-formats]}
+  ["/api"
    ["/persons"
     {:post
      (fn [request-map]
