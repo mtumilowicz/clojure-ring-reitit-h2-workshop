@@ -231,6 +231,55 @@ your application more difficult
             * (:name earth) ;; (3) invoking the keyword key
                 * invoking the keyword as a function is
                   the preferred method
+        * Fortunately, Clojure provides three functions that make updating nested collec-
+          tions easy.
+            * (assoc-in users [:kyle :summary :average :monthly] 3000)
+            * If any nested map doesn’t exist along the way, it gets created and correctly associated.
+            * The next convenience function reads values out of such nested maps. This func-
+              tion is called get-in :
+              (get-in users [:kyle :summary :average :monthly])
+            * update-in , which can be
+              used to update values in such nested maps
+                * (update-in users [:kyle :summary :average :monthly] + 500)
+* function definition
+    * (defn addition-function [x y]
+      (+ x y))
+    * let
+        * The let form allows you to introduce locally named things into your
+          code by binding a symbol to a value
+        * (defn average-pets []
+          (let [user-data (vals users)
+          pet-counts (map :number-pets user-data)
+          _ (println "total pets:" pet-counts)
+          total (apply + pet-counts)]
+          (/ total (count users))))
+* do
+    * To combine multiple s-expressions into a single form, Clojure provides the do
+      form.
+    * The do form is a convenient way to combine multiple s-expressions into one.
+    * (if (is-something-true?)
+      (do
+      (log-message "in true branch")
+      (store-something-in-db)
+      (return-useful-value)))
+    * (if test consequent alternative)
+    * (cond
+      (> x 0) "greater!"
+      (= x 0) "zero!"
+      :default "lesser!")
+    * (when test & body)
+        * This convenient macro is an if (without the alternative clause), along with an implicit
+          do
+* LOOP / RECUR
+    * Clojure doesn’t have traditional for loops for iteration
+    * (defn fact-loop [n]
+      (loop [current n fact 1] // exactly as let
+      (if (= current 1)
+      fact
+      (recur (dec current) (* fact current) )))) // each value is bound to the respective name as described in the loop form
+* threading
+    * ->>, ->, some->, some->>
+    *
 * One of the most common techniques seen in Clojure for sequential search is
   to use the some function
     * (some #{:oz} units)
@@ -239,19 +288,102 @@ your application more difficult
           ment)
 * private methods
     * (defn- update-calories
+* Tools for Managing Change
+    * Atom, Ref, Var, Agent
+    * identity
+      and state as separate things
+      * A state is a value or set of values belonging to an identity.
+        Identity is a series of states, separated by time.
+      * Consider your favorite coffee shop. Depending on the time of day, it might be
+        open or closed. As new roasts come through the door, the available brews
+        change. Different shifts have different baristas manning the espresso machine
+        and a different set of customers at the bar. The coffee shop might even change
+        its location or name at some point. Even with all this change, the identity of
+        the coffee shop remains the same. The shop’s identity wraps around and
+        enfolds the different coffees, clientele, staff, and whether the door is locked
+        when you need your morning joe.
+        State, on the other hand, represents an identity’s value for a instant in time.
+        To continue our coffee shop analogy, at 7 a.m. on Tuesday the shop is open,
+        Lindsay is managing the register, Jimmy is dialing in the grinder, the cus-
+        tomers are checking their laptops before heading to the office, and the light
+        roast is something Ethiopian.
+    * (update-fn container data-fn & args)
+    * Clojure’s reference types implement IRef .
+    * IRef create-fn update-fn(s) set-fn
+      reset! swap! atom Atom
+      ref-set alter, commute ref Ref
+      var-set alter-var-root def Var
+      restart-agent send, send-off agent Agent
+    * ;; to create:
+      (create-fn container)
+      ;; to update:
+      (update-fn container data-fn & args)
+      ;; to assign a value:
+      (set-fn container new-val)
+* Clojure programs, we’re going to say that parentheses serve two purposes:
+  ■ Calling functions
+  ■ Constructing lists
+    * On the other hand, at the meta level, your
+      entire Clojure program is a series of lists: the
+      very source code of your program is inter-
+      preted by the Clojure compiler as lists that con-
+      tain function names and arguments that need
+      to be parsed, evaluated, and compiled.
+    * Because
+      the same language features are available at both
+      the lower compiler levels and in your normal program code, Lisp enables uniquely pow-
+      erful meta-programming capabilities.
+    * Clojure code is represented using Clojure data structures
+    * The
+      list is special because each expression of Clojure code is a list
+        * Clojure assumes that the
+          first symbol appearing in a list represents the name of a function (or a macro)
+        * The
+          remaining expressions in the list are considered arguments to the function
+        * This has another implication. What if you wanted to define three-numbers as a list
+          containing the numbers 1, 2, and 3?
+            * (def three-numbers (1 2 3))
+               ; CompilerException java.lang.ClassCastException: java.lang.Long cannot be
+               cast to clojure.lang.IFn, compiling:(NO_SOURCE_FILE:1)
+            * The reason for this error is that Clojure is trying to treat the list (1 2 3) the same way as
+              it treats all lists. The first element is considered a function, and here the integer 1 isn’t a
+              function.
+            (def three-numbers '(1 2 3)) // quoting
+* vectors
+    * Vectors are like lists, except for two things: they’re denoted using square brackets, and
+      they’re indexed by number.
+    * [10 20 30 40 50]
+* nil
+    * Clo-
+      jure’s nil is equivalent to null
+    * Everything other than false and nil is considered
+      true
+* symbol and keyword
+    * Symbols are the identifiers in a Clojure program, the names that signify values.
+    * in the form (+ 1 2) the + is a symbol signifying the addition function
+    * symbols normally resolve to something else that isn’t a symbol
+        * But
+          it’s possible to treat a symbol as a value itself and not an identifier by quoting the sym-
+          bol with a leading single-quote character
+        * In practice you’ll almost never quote symbols to use them as
+          data because Clojure has a special type specifically for this use case: the keyword
+    * keyword
+        * A key-
+          word is sort of like an autoquoted symbol: keywords never reference some other value
+          and always evaluate to themselves
+        * You can construct keywords and symbols from strings using the keyword and symbol
+          functions
 
-* records
-* atom
+## macros
+
+
+
+
+
 * namespaces
     * (:require [clojure.core.match :refer [match]])
-* threads
-    * ->>, ->, some->, some->>
-    * https://clojuredocs.org/clojure.core/-%3E%3E
 * .edn
 * nil
-* overriding
-    * defprotocol, deftype
-    * defmulti, defmethod
 * validation
     * struct.core
 * syntax
@@ -270,7 +402,6 @@ your application more difficult
     * is an interactive prompt where you can enter arbitrary code to run in the context of your project
 * pattern matching
     * clojure.core.match :refer [match]
-* defmacro
 * loading config
     * cprop.core :refer [load-config]
 * testing
