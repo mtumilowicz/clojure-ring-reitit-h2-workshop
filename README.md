@@ -14,6 +14,8 @@
     * https://github.com/ring-clojure/ring
     * https://metosin.github.io/muuntaja
     * https://github.com/metosin/reitit
+    * https://github.com/technomancy/leiningen/blob/stable/doc/TUTORIAL.md
+    * https://github.com/technomancy/leiningen/blob/stable/sample.project.clj
 
 ## ring
 * is a Clojure web applications library
@@ -105,8 +107,64 @@ your application more difficult
            :not-acceptable
            (constantly (response/not-acceptable "406 - Not acceptable"))})))
     ```
+* exception handling
+    * it's good to add `{:exception pretty/exception}` because it makes routing errors (for example conflicting route)
+    increases readability of errors
+        * Exceptions thrown in router creation
+* reitit.ring.middleware.dev/print-request-diffs
+    * prints a request and response diff between each middleware
+* Wrapper for Muuntaja middleware for content negotiation, request decoding and response encoding
+    * you can compose your new muuntaja instance with as many options as you need
+    * example
+        ```
+        (def new-muuntaja
+          (m/create
+           (-> m/default-options
+               (assoc-in [:formats "application/json" :decoder-opts :bigdecimals] true)
+               (assoc-in [:formats "application/json" :encoder-opts :date-format] "yyyy-MM-dd"))))
+        ```
+* The following request parameters are currently supported:
+  type	request source
+  :query	:query-params
+  :body	:body-params
+  :form	:form-params
+  :header	:header-params
+  :path	:path-params
+* Routers can be configured via options.
+    * :data	Initial route data
+
+## leiningen
+* offers various project-related tasks and can:
+    * create new projects
+    * fetch dependencies for your project
+    * run tests
+    * run a fully-configured REPL
+    * run the project
+    * compile and package projects for deployment
+    * run custom automation tasks written in Clojure (leiningen plug-ins)
+* Leiningen could be thought of as "Maven meets Ant without the pain"
+* A project is a directory containing a group of Clojure (and possibly Java) source files, along with a bit of metadata about them
+    * metadata is stored in a file named project.clj in the project's root directory
+        * Project name
+        * Project description
+        * What libraries the project depends on
+        * What Clojure version to use
+        * Where to find source files
+        * What's the main namespace of the app
+* Clojure is a hosted language and Clojure libraries are distributed the same way as in other JVM languages: as jar files.
+    * :dependencies vector in project.clj
+* There are several popular open source repositories. Leiningen by default will use two of them: clojars.org and Maven Central.
+    * Clojars is the Clojure community's centralized Maven repository
+    * You can add third-party repositories by setting the :repositories key in project.clj
+* To pass extra arguments to the JVM, set the :jvm-opts vector
+* lein run
+* lein test
+* profiles
+    * add various things into your project map in different contexts
+    * For instance, during lein test runs, the contents of the :test profile, if present, will be merged into your project map
+
+## syntax
 * records
-* leiningen
 * atom
 * namespaces
     * (:require [clojure.core.match :refer [match]])
@@ -130,6 +188,8 @@ your application more difficult
     * ->> request-map (:body-params)
 * REPL
     * how to reload namespace
+    * (read-eval-print loop)
+    * is an interactive prompt where you can enter arbitrary code to run in the context of your project
 * pattern matching
     * clojure.core.match :refer [match]
 * defmacro
