@@ -164,6 +164,82 @@ your application more difficult
     * For instance, during lein test runs, the contents of the :test profile, if present, will be merged into your project map
 
 ## syntax
+* In Clojure, the simplest way to model an entity with a set of attributes is to
+  use a Clojure map
+* Records provide some class-like features —well-known fields and constructors
+  —to support domain entities.
+    * (defrecord Planet [name
+      moons
+      volume ;; km^3
+      mass ;; kg
+      aphelion ;; km, farthest from sun
+      perihelion ;; km, closest to sun
+      ])
+    *  there will be a positional factory function
+      ( ->Planet ) that expects a value for each attribute in the order specified by defrecord
+      and a map factory function ( map->Planet ) that expects a map with keyed values
+    * (map->Planet {:name "Earth"
+      :moons 1
+      :volume 1.08321e12
+      :mass 5.97219e24
+      :aphelion 152098232
+      :perihelion 147098290}))
+    * Maps and records both use the standard map collection functions for access
+      and modification, but most of the time records are a better choice for domain
+      entities.
+* We can include optional arguments in the definition of a function by adding
+  & opts to the arguments vector:
+  (defn fn-with-opts [f1 f2 & opts] ,,, )
+* Multimethods vs. Protocols
+    * multimethod
+        * The defmulti form defines the name and signature of the
+          function as well as the dispatch function.
+        * Each defmethod form provides a function implementation for a particular dispatch value
+    * protocol
+        * Protocols also have the ability to group related functions together in a
+          single protocol. For these reasons, protocols are usually preferred for type-
+          based dispatch.
+* collections
+    * Clojure operations like conj add elements at the natural insertion point—at
+      the beginning for lists and at the end for vectors.
+    * Many new Clojure developers
+      find it confusing that one operation behaves differently for different data
+      structures.
+    * However, conj is designed to efficiently add elements at the place
+      that’s best for each data structure.
+    * In Clojure, change is always modeled as the application of a pure function to
+      an immutable value, resulting in a new immutable value.
+    * bulk updates
+        * Call transient to get a mutable version of a vector, hash-map, or hash-set (the
+          original stays immutable).
+        * Transient collections can’t be modified by the per-
+          sistent modification functions like conj and assoc .
+            * Transient collections have
+              an equivalent set of functions that mutate the instance, all with a ! suffix:
+              conj! , assoc! , and so on
+            * When mutation is complete, call persistent! to
+              get back to a persistent collection.
+            * (persistent!
+              (reduce #(conj! %1 %2) (transient []) data)))
+    * Updating Maps
+        * basic tools for modifying maps are assoc and dissoc
+        * update function that can transform the value at a key based on applying a
+          function
+        * get from map
+            * (get earth :name)
+            * (earth :name) ;; (2) invoking the map
+            * (:name earth) ;; (3) invoking the keyword key
+                * invoking the keyword as a function is
+                  the preferred method
+* One of the most common techniques seen in Clojure for sequential search is
+  to use the some function
+    * (some #{:oz} units)
+        * This function evaluates a predicate for each element
+          of a collection and returns the first logically true value (not the original ele-
+          ment)
+* private methods
+    * (defn- update-calories
+
 * records
 * atom
 * namespaces
@@ -172,10 +248,12 @@ your application more difficult
     * ->>, ->, some->, some->>
     * https://clojuredocs.org/clojure.core/-%3E%3E
 * .edn
+* nil
 * overriding
     * defprotocol, deftype
     * defmulti, defmethod
-* validation: struct
+* validation
+    * struct.core
 * syntax
     * (let
     * clojure.set/rename-keys
