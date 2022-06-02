@@ -16,6 +16,8 @@
     * https://github.com/metosin/reitit
     * https://github.com/technomancy/leiningen/blob/stable/doc/TUTORIAL.md
     * https://github.com/technomancy/leiningen/blob/stable/sample.project.clj
+    * https://stackoverflow.com/questions/5459865/how-can-i-throw-an-exception-in-clojure
+    * https://stackoverflow.com/questions/7658981/how-to-reload-a-clojure-file-in-repl
 
 ## ring
 * is a Clojure web applications library
@@ -277,9 +279,51 @@ your application more difficult
       (if (= current 1)
       fact
       (recur (dec current) (* fact current) )))) // each value is bound to the respective name as described in the loop form
+    * The same recur form can be used to write recursive func-
+      tions.
+* The apply function is extremely handy, because it’s quite common to end up with a
+  sequence of things that need to be used as arguments to a function.
+    * (apply + list-of-expenses)
+* partial , which is short for partial application, is a higher-order function that accepts
+  a function f and a few arguments to f but fewer than the number f normally takes.
+    * partial then returns a new function that accepts the remaining arguments to f .
 * threading
     * ->>, ->, some->, some->>
-    *
+    * (defn final-amount [principle rate time-periods]
+      (* (Math/pow (+ 1 (/ rate 100)) time-periods) principle))
+        * function definition is difficult to read, because it’s written inside
+                      out, thanks to the prefix nature of Clojure’s syntax
+        * (defn final-amount-> [principle rate time-periods]
+          (-> rate
+          (/ 100)
+          (+ 1)
+          (Math/pow time-periods)
+          (* principle)))
+        * What the thread-first macro does is take the first argument supplied and place it in
+          the second position of the next expression
+        * This is an example of how a macro can
+          manipulate code to make it easier to read. Doing something like this is nearly impossi-
+          ble in most other languages.
+    * thread last
+        *  Instead of
+          taking the first expression and moving it into the second position of the next expres-
+          sion, it moves it into the last place.
+        * (defn factorial [n]
+          (reduce * (range 1 (+ 1 n))))
+        * (defn factorial->> [n]
+          (->> n
+          (+ 1)
+          (range 1)
+          (reduce *)))
+        * A far more common use of this macro is when working with sequences of data ele-
+          ments and using higher-order functions such as map , reduce , and filter
+        * Each of
+          these functions accepts the sequence as the last element, so the thread-last macro is
+          perfect for the job.
+    *  introduced two related
+      ones called some-> and some->> . These two behave exactly the same as the respec-
+      tive ones we just discussed, but computation ends if the result of any step in the
+      expansion is nil .
 * One of the most common techniques seen in Clojure for sequential search is
   to use the some function
     * (some #{:oz} units)
@@ -367,21 +411,63 @@ your application more difficult
           bol with a leading single-quote character
         * In practice you’ll almost never quote symbols to use them as
           data because Clojure has a special type specifically for this use case: the keyword
+        * To use the analogy of a dictionary,
+          the word in a dictionary entry is the symbol but the definition of the word is a binding of
+          that word to a particular meaning.
     * keyword
         * A key-
           word is sort of like an autoquoted symbol: keywords never reference some other value
           and always evaluate to themselves
         * You can construct keywords and symbols from strings using the keyword and symbol
           functions
+        * Keyword functions accept one or two arguments. The first argument is a map, and
+          the keyword looks itself up in this map.
+            * (:username person)
+            * (map :member-since users)
+* exceptions
+    * (try
+        (throw
+          (ex-info "The ice cream has melted!"
+             {:causes             #{:fridge-door-open :dangerously-high-temperature}
+              :current-temperature {:value 25 :unit :celcius}}))
+    * (throw (Exception. "this is an error!"))
+* M ULTIPLE ARITY
+    * The arity of a function is the number of parameters it accepts.
+    * (defn total-cost
+      ([item-cost number-of-items]
+      (* item-cost number-of-items))
+      ([item-cost]
+      (total-cost item-cost 1)))
+* Java has varargs. In Clojure, the same is achieved with the & symbol:
+  (defn total-all-numbers [& numbers]
+  (apply + numbers))
 
 ## macros
+*
 
 
 
 
+## namespaces
+* (:require [clojure.core.match :refer [match]])
+* There’s a core var in Clojure called *ns* . This var is bound to the currently active
+  namespace.
+    * The ns macro does just this—it sets the
+      current namespace to whatever you specify
+    * (ns name & references)
+    * The name , as mentioned previously, is the name of the namespace being made cur-
+      rent. If it doesn’t already exist, it gets created.
+    * The references that follow the name
+      are optional and can be one or more of the following: use , require , import , load , or
+      gen-class .
+* (ns org.currylogic.damages.http.expenses
+  (:require [clojure.data.json :as json-lib]
+  [clojure.xml :as xml-core]))
+* (use 'org.currylogic.damages.http.expenses :reload)
 
-* namespaces
-    * (:require [clojure.core.match :refer [match]])
+
+
+
 * .edn
 * nil
 * validation
