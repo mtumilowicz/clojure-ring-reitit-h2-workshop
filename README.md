@@ -18,6 +18,7 @@
     * https://github.com/technomancy/leiningen/blob/stable/sample.project.clj
     * https://stackoverflow.com/questions/5459865/how-can-i-throw-an-exception-in-clojure
     * https://stackoverflow.com/questions/7658981/how-to-reload-a-clojure-file-in-repl
+    * https://clojure.org/guides/destructuring
 
 ## ring
 * is a Clojure web applications library
@@ -192,15 +193,6 @@ your application more difficult
 * We can include optional arguments in the definition of a function by adding
   & opts to the arguments vector:
   (defn fn-with-opts [f1 f2 & opts] ,,, )
-* Multimethods vs. Protocols
-    * multimethod
-        * The defmulti form defines the name and signature of the
-          function as well as the dispatch function.
-        * Each defmethod form provides a function implementation for a particular dispatch value
-    * protocol
-        * Protocols also have the ability to group related functions together in a
-          single protocol. For these reasons, protocols are usually preferred for type-
-          based dispatch.
 * collections
     * Clojure operations like conj add elements at the natural insertion point—at
       the beginning for lists and at the end for vectors.
@@ -243,6 +235,38 @@ your application more difficult
             * update-in , which can be
               used to update values in such nested maps
                 * (update-in users [:kyle :summary :average :monthly] + 500)
+* destructuring
+    * (defn describe-salary [person]
+      (let [first (:first-name person)
+      last (:last-name person)
+      annual (:salary person)]
+      (println first last "earns" annual)))
+    * (defn describe-salary-2 [{first :first-name
+      last :last-name
+      annual :salary}]
+      (println first last "earns" annual))
+    * map destructuring
+        * (defn describe-salary-2 [{first :first-name
+          last :last-name
+          annual :salary}]
+          (println first last "earns" annual))
+        * Now suppose that you also want to bind a bonus
+          percentage, which may or may not exist.
+            * (defn describe-salary-3 [{first :first-name
+              last :last-name
+              annual :salary
+              bonus :bonus-percentage :or {bonus 5}}]
+            * The value for :or is a map where the bound symbol (here category) is bound to the expression "Category not found". When category is not found in client, it is instead found in the :or map and bound to that value instead.
+
+        * Finally, similar to the case of vectors, map bindings can use the :as option to bind the
+          complete hash map to a name.
+          * (defn describe-person [{first :first-name
+            last :last-name
+            bonus :bonus-percentage
+            :or {bonus 5}
+            :as p}]
+        * (defn greet-user [{:keys [first-name last-name]}]
+          (println "Welcome," first-name last-name))
 * function definition
     * (defn addition-function [x y]
       (+ x y))
@@ -351,6 +375,22 @@ your application more difficult
         Lindsay is managing the register, Jimmy is dialing in the grinder, the cus-
         tomers are checking their laptops before heading to the office, and the light
         roast is something Ethiopian.
+      * The flaw is that these languages conflate the idea of what Rich Hickey calls identity
+        with that of state. Consider a person’s favorite set of movies. As a child, this person’s
+        set might contain films made by Disney and Pixar. As a grownup, the person’s set
+        might contain other movies, such as ones directed by Tim Burton or Robert Zemeckis.
+        The entity represented by favorite-movies changes over time. Or does it?
+        In reality, there are two different sets of movies. At one point (earlier), favorite-
+        movies referred to the set containing children’s movies; at another point (later), it
+        referred to a different set that contained other movies. What changes over time, there-
+        fore, isn’t the set itself but which set the entity favorite-movies refers to. Further, at any
+        given point, a set of movies itself doesn’t change. The timeline demands different sets
+        containing different movies over time, even if some movies appear in more than one set.
+        To summarize, it’s important to realize that we’re talking about two distinct con-
+        cepts. The first is that of an identity—someone’s favorite movies. It’s the subject of all
+        the action in the associated program. The second is the sequence of values that this
+        identity assumes over the course of the program. These two ideas give us an interesting
+        definition of state—the value of an identity at a particular point time.
     * (update-fn container data-fn & args)
     * Clojure’s reference types implement IRef .
     * IRef create-fn update-fn(s) set-fn
@@ -442,8 +482,77 @@ your application more difficult
   (defn total-all-numbers [& numbers]
   (apply + numbers))
 
+## polymorphism
+* Multimethods vs. Protocols
+    * multimethod
+        * The defmulti form defines the name and signature of the
+          function as well as the dispatch function.
+        * Each defmethod form provides a function implementation for a particular dispatch value
+    * protocol
+        * Protocols also have the ability to group related functions together in a
+          single protocol. For these reasons, protocols are usually preferred for type-
+          based dispatch.
+* Parametric polymorphism
+    * You’ve actually already come in contact with polymorphism in Clojure. As you saw in
+      chapter 2, functions such as get , conj , assoc , map , into , reduce , and so on accept
+      many different types in their arguments but always do the correct thing.
+    * Clojure col-
+      lections are also polymorphic because they can hold items of any type.
+        * This kind of
+          polymorphism is called parametric polymorphism because such code mentions only
+          parameters and not types
+        * it’s also present in
+          some statically typed programming languages, both object-oriented languages such as
+          Java and C# (where it’s called generics)
+
 ## macros
-*
+* Macros are the most distinguishing feature of Clojure when compared to languages
+  such as Java and Ruby.
+* Recall from chapter 1 that the Clojure runtime processes source code differ-
+  ently compared to most other languages.
+    * Specifically, there’s a read phase followed by
+      an evaluation phase.
+    * In the first phase, the Clojure reader converts a stream of charac-
+      ters (the source code) into Clojure data structures
+    * These data structures are then
+      evaluated to execute the program. The trick that makes macros possible is that Clo-
+      jure offers a hook between the two phases, allowing the programmer to process the
+      data structures representing the code before they’re evaluated.
+* Macros allow code to be modified programmatically
+  before evaluation, making it possible to create whole new kinds of abstractions.
+* Since the book The C Programming Language came out, almost all programming lan-
+  guage books have used the “Hello, world!” program as an introductory example.
+    * There’s a similar tradition when it comes to explaining macros, and it involves adding
+      the unless control structure to the language.
+    * (defn unless [test then]
+      (if (not test)
+      then))
+    * The reason for this is
+      that unless is a function, and all functions execute according to the following rules:
+      1 Evaluate all arguments passed to the function call form.
+      2 Evaluate the function using the values of the arguments.
+    * Rule 1 causes the arguments to be evaluated. In the case of the unless function, those
+      are the test and then expressions.
+* (defmacro unless [test then]
+  (list 'if (list 'not test)
+  then))
+  * This generates an s-expression of the form (if (not test) then) when the macro is
+    expanded.
+  * macroexpand-1 is a useful function when writing macros, because it can be used to
+    check if the transformation of s-expressions is working correctly.
+  * What’s more, such macros are quite common. For instance, Clojure provides when ,
+    when-not , cond , if-not , and so on that are all constructs that allow conditional execu-
+    tion of code and are all implemented as macros.
+  * T EMPLATING USING THE BACKQUOTE ( ` ) MACRO
+    * (defmacro unless [test then]
+      `(if (not ~test)
+      ~then))
+    * The back-
+      quote starts the template.
+    * The template will be expanded into an s-expression and will
+      be returned as the return value of the macro.
+    * Things that do need to change—say, parameters passed to the macro—are
+      unquoted using the ~ character.
 
 
 
@@ -479,9 +588,6 @@ your application more difficult
     * keyword
     * if-let
     * nil
-* destructuring
-    * [{:keys
-    * ->> request-map (:body-params)
 * REPL
     * how to reload namespace
     * (read-eval-print loop)
