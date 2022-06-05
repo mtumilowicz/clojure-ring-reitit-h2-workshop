@@ -136,36 +136,6 @@ your application more difficult
 * Routers can be configured via options.
     * :data	Initial route data
 
-## leiningen
-* offers various project-related tasks and can:
-    * create new projects
-    * fetch dependencies for your project
-    * run tests
-    * run a fully-configured REPL
-    * run the project
-    * compile and package projects for deployment
-    * run custom automation tasks written in Clojure (leiningen plug-ins)
-* Leiningen could be thought of as "Maven meets Ant without the pain"
-* A project is a directory containing a group of Clojure (and possibly Java) source files, along with a bit of metadata about them
-    * metadata is stored in a file named project.clj in the project's root directory
-        * Project name
-        * Project description
-        * What libraries the project depends on
-        * What Clojure version to use
-        * Where to find source files
-        * What's the main namespace of the app
-* Clojure is a hosted language and Clojure libraries are distributed the same way as in other JVM languages: as jar files.
-    * :dependencies vector in project.clj
-* There are several popular open source repositories. Leiningen by default will use two of them: clojars.org and Maven Central.
-    * Clojars is the Clojure community's centralized Maven repository
-    * You can add third-party repositories by setting the :repositories key in project.clj
-* To pass extra arguments to the JVM, set the :jvm-opts vector
-* lein run
-* lein test
-* profiles
-    * add various things into your project map in different contexts
-    * For instance, during lein test runs, the contents of the :test profile, if present, will be merged into your project map
-
 ## syntax
 * In Clojure, the simplest way to model an entity with a set of attributes is to
   use a Clojure map
@@ -190,9 +160,6 @@ your application more difficult
     * Maps and records both use the standard map collection functions for access
       and modification, but most of the time records are a better choice for domain
       entities.
-* We can include optional arguments in the definition of a function by adding
-  & opts to the arguments vector:
-  (defn fn-with-opts [f1 f2 & opts] ,,, )
 * collections
     * Clojure operations like conj add elements at the natural insertion point—at
       the beginning for lists and at the end for vectors.
@@ -267,35 +234,6 @@ your application more difficult
             :as p}]
         * (defn greet-user [{:keys [first-name last-name]}]
           (println "Welcome," first-name last-name))
-* function definition
-    * (defn addition-function [x y]
-      (+ x y))
-    * let
-        * The let form allows you to introduce locally named things into your
-          code by binding a symbol to a value
-        * (defn average-pets []
-          (let [user-data (vals users)
-          pet-counts (map :number-pets user-data)
-          _ (println "total pets:" pet-counts)
-          total (apply + pet-counts)]
-          (/ total (count users))))
-* do
-    * To combine multiple s-expressions into a single form, Clojure provides the do
-      form.
-    * The do form is a convenient way to combine multiple s-expressions into one.
-    * (if (is-something-true?)
-      (do
-      (log-message "in true branch")
-      (store-something-in-db)
-      (return-useful-value)))
-    * (if test consequent alternative)
-    * (cond
-      (> x 0) "greater!"
-      (= x 0) "zero!"
-      :default "lesser!")
-    * (when test & body)
-        * This convenient macro is an if (without the alternative clause), along with an implicit
-          do
 * LOOP / RECUR
     * Clojure doesn’t have traditional for loops for iteration
     * (defn fact-loop [n]
@@ -356,54 +294,6 @@ your application more difficult
           ment)
 * private methods
     * (defn- update-calories
-* Tools for Managing Change
-    * Atom, Ref, Var, Agent
-    * identity
-      and state as separate things
-      * A state is a value or set of values belonging to an identity.
-        Identity is a series of states, separated by time.
-      * Consider your favorite coffee shop. Depending on the time of day, it might be
-        open or closed. As new roasts come through the door, the available brews
-        change. Different shifts have different baristas manning the espresso machine
-        and a different set of customers at the bar. The coffee shop might even change
-        its location or name at some point. Even with all this change, the identity of
-        the coffee shop remains the same. The shop’s identity wraps around and
-        enfolds the different coffees, clientele, staff, and whether the door is locked
-        when you need your morning joe.
-        State, on the other hand, represents an identity’s value for a instant in time.
-        To continue our coffee shop analogy, at 7 a.m. on Tuesday the shop is open,
-        Lindsay is managing the register, Jimmy is dialing in the grinder, the cus-
-        tomers are checking their laptops before heading to the office, and the light
-        roast is something Ethiopian.
-      * The flaw is that these languages conflate the idea of what Rich Hickey calls identity
-        with that of state. Consider a person’s favorite set of movies. As a child, this person’s
-        set might contain films made by Disney and Pixar. As a grownup, the person’s set
-        might contain other movies, such as ones directed by Tim Burton or Robert Zemeckis.
-        The entity represented by favorite-movies changes over time. Or does it?
-        In reality, there are two different sets of movies. At one point (earlier), favorite-
-        movies referred to the set containing children’s movies; at another point (later), it
-        referred to a different set that contained other movies. What changes over time, there-
-        fore, isn’t the set itself but which set the entity favorite-movies refers to. Further, at any
-        given point, a set of movies itself doesn’t change. The timeline demands different sets
-        containing different movies over time, even if some movies appear in more than one set.
-        To summarize, it’s important to realize that we’re talking about two distinct con-
-        cepts. The first is that of an identity—someone’s favorite movies. It’s the subject of all
-        the action in the associated program. The second is the sequence of values that this
-        identity assumes over the course of the program. These two ideas give us an interesting
-        definition of state—the value of an identity at a particular point time.
-    * (update-fn container data-fn & args)
-    * Clojure’s reference types implement IRef .
-    * IRef create-fn update-fn(s) set-fn
-      reset! swap! atom Atom
-      ref-set alter, commute ref Ref
-      var-set alter-var-root def Var
-      restart-agent send, send-off agent Agent
-    * ;; to create:
-      (create-fn container)
-      ;; to update:
-      (update-fn container data-fn & args)
-      ;; to assign a value:
-      (set-fn container new-val)
 * Clojure programs, we’re going to say that parentheses serve two purposes:
   ■ Calling functions
   ■ Constructing lists
@@ -464,24 +354,6 @@ your application more difficult
           the keyword looks itself up in this map.
             * (:username person)
             * (map :member-since users)
-* exceptions
-    * (try
-        (throw
-          (ex-info "The ice cream has melted!"
-             {:causes             #{:fridge-door-open :dangerously-high-temperature}
-              :current-temperature {:value 25 :unit :celcius}}))
-    * (throw (Exception. "this is an error!"))
-* M ULTIPLE ARITY
-    * The arity of a function is the number of parameters it accepts.
-    * (defn total-cost
-      ([item-cost number-of-items]
-      (* item-cost number-of-items))
-      ([item-cost]
-      (total-cost item-cost 1)))
-* Java has varargs. In Clojure, the same is achieved with the & symbol:
-  (defn total-all-numbers [& numbers]
-  (apply + numbers))
-
 ## polymorphism
 * Multimethods vs. Protocols
     * multimethod
@@ -554,44 +426,15 @@ your application more difficult
     * Things that do need to change—say, parameters passed to the macro—are
       unquoted using the ~ character.
 
-
-
-
-## namespaces
-* (:require [clojure.core.match :refer [match]])
-* There’s a core var in Clojure called *ns* . This var is bound to the currently active
-  namespace.
-    * The ns macro does just this—it sets the
-      current namespace to whatever you specify
-    * (ns name & references)
-    * The name , as mentioned previously, is the name of the namespace being made cur-
-      rent. If it doesn’t already exist, it gets created.
-    * The references that follow the name
-      are optional and can be one or more of the following: use , require , import , load , or
-      gen-class .
-* (ns org.currylogic.damages.http.expenses
-  (:require [clojure.data.json :as json-lib]
-  [clojure.xml :as xml-core]))
-* (use 'org.currylogic.damages.http.expenses :reload)
-
-
-
-
 * .edn
 * nil
 * validation
     * struct.core
 * syntax
-    * (let
     * clojure.set/rename-keys
     * constantly, #()
     * keyword
     * if-let
-    * nil
-* REPL
-    * how to reload namespace
-    * (read-eval-print loop)
-    * is an interactive prompt where you can enter arbitrary code to run in the context of your project
 * pattern matching
     * clojure.core.match :refer [match]
 * loading config
