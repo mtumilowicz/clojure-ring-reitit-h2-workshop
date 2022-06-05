@@ -137,8 +137,6 @@ your application more difficult
     * :data	Initial route data
 
 ## syntax
-* In Clojure, the simplest way to model an entity with a set of attributes is to
-  use a Clojure map
 * Records provide some class-like features —well-known fields and constructors
   —to support domain entities.
     * (defrecord Planet [name
@@ -160,48 +158,6 @@ your application more difficult
     * Maps and records both use the standard map collection functions for access
       and modification, but most of the time records are a better choice for domain
       entities.
-* collections
-    * Clojure operations like conj add elements at the natural insertion point—at
-      the beginning for lists and at the end for vectors.
-    * Many new Clojure developers
-      find it confusing that one operation behaves differently for different data
-      structures.
-    * However, conj is designed to efficiently add elements at the place
-      that’s best for each data structure.
-    * In Clojure, change is always modeled as the application of a pure function to
-      an immutable value, resulting in a new immutable value.
-    * bulk updates
-        * Call transient to get a mutable version of a vector, hash-map, or hash-set (the
-          original stays immutable).
-        * Transient collections can’t be modified by the per-
-          sistent modification functions like conj and assoc .
-            * Transient collections have
-              an equivalent set of functions that mutate the instance, all with a ! suffix:
-              conj! , assoc! , and so on
-            * When mutation is complete, call persistent! to
-              get back to a persistent collection.
-            * (persistent!
-              (reduce #(conj! %1 %2) (transient []) data)))
-    * Updating Maps
-        * basic tools for modifying maps are assoc and dissoc
-        * update function that can transform the value at a key based on applying a
-          function
-        * get from map
-            * (get earth :name)
-            * (earth :name) ;; (2) invoking the map
-            * (:name earth) ;; (3) invoking the keyword key
-                * invoking the keyword as a function is
-                  the preferred method
-        * Fortunately, Clojure provides three functions that make updating nested collec-
-          tions easy.
-            * (assoc-in users [:kyle :summary :average :monthly] 3000)
-            * If any nested map doesn’t exist along the way, it gets created and correctly associated.
-            * The next convenience function reads values out of such nested maps. This func-
-              tion is called get-in :
-              (get-in users [:kyle :summary :average :monthly])
-            * update-in , which can be
-              used to update values in such nested maps
-                * (update-in users [:kyle :summary :average :monthly] + 500)
 * destructuring
     * (defn describe-salary [person]
       (let [first (:first-name person)
@@ -234,21 +190,6 @@ your application more difficult
             :as p}]
         * (defn greet-user [{:keys [first-name last-name]}]
           (println "Welcome," first-name last-name))
-* LOOP / RECUR
-    * Clojure doesn’t have traditional for loops for iteration
-    * (defn fact-loop [n]
-      (loop [current n fact 1] // exactly as let
-      (if (= current 1)
-      fact
-      (recur (dec current) (* fact current) )))) // each value is bound to the respective name as described in the loop form
-    * The same recur form can be used to write recursive func-
-      tions.
-* The apply function is extremely handy, because it’s quite common to end up with a
-  sequence of things that need to be used as arguments to a function.
-    * (apply + list-of-expenses)
-* partial , which is short for partial application, is a higher-order function that accepts
-  a function f and a few arguments to f but fewer than the number f normally takes.
-    * partial then returns a new function that accepts the remaining arguments to f .
 * threading
     * ->>, ->, some->, some->>
     * (defn final-amount [principle rate time-periods]
@@ -286,74 +227,8 @@ your application more difficult
       ones called some-> and some->> . These two behave exactly the same as the respec-
       tive ones we just discussed, but computation ends if the result of any step in the
       expansion is nil .
-* One of the most common techniques seen in Clojure for sequential search is
-  to use the some function
-    * (some #{:oz} units)
-        * This function evaluates a predicate for each element
-          of a collection and returns the first logically true value (not the original ele-
-          ment)
 * private methods
     * (defn- update-calories
-* Clojure programs, we’re going to say that parentheses serve two purposes:
-  ■ Calling functions
-  ■ Constructing lists
-    * On the other hand, at the meta level, your
-      entire Clojure program is a series of lists: the
-      very source code of your program is inter-
-      preted by the Clojure compiler as lists that con-
-      tain function names and arguments that need
-      to be parsed, evaluated, and compiled.
-    * Because
-      the same language features are available at both
-      the lower compiler levels and in your normal program code, Lisp enables uniquely pow-
-      erful meta-programming capabilities.
-    * Clojure code is represented using Clojure data structures
-    * The
-      list is special because each expression of Clojure code is a list
-        * Clojure assumes that the
-          first symbol appearing in a list represents the name of a function (or a macro)
-        * The
-          remaining expressions in the list are considered arguments to the function
-        * This has another implication. What if you wanted to define three-numbers as a list
-          containing the numbers 1, 2, and 3?
-            * (def three-numbers (1 2 3))
-               ; CompilerException java.lang.ClassCastException: java.lang.Long cannot be
-               cast to clojure.lang.IFn, compiling:(NO_SOURCE_FILE:1)
-            * The reason for this error is that Clojure is trying to treat the list (1 2 3) the same way as
-              it treats all lists. The first element is considered a function, and here the integer 1 isn’t a
-              function.
-            (def three-numbers '(1 2 3)) // quoting
-* vectors
-    * Vectors are like lists, except for two things: they’re denoted using square brackets, and
-      they’re indexed by number.
-    * [10 20 30 40 50]
-* nil
-    * Clo-
-      jure’s nil is equivalent to null
-    * Everything other than false and nil is considered
-      true
-* symbol and keyword
-    * Symbols are the identifiers in a Clojure program, the names that signify values.
-    * in the form (+ 1 2) the + is a symbol signifying the addition function
-    * symbols normally resolve to something else that isn’t a symbol
-        * But
-          it’s possible to treat a symbol as a value itself and not an identifier by quoting the sym-
-          bol with a leading single-quote character
-        * In practice you’ll almost never quote symbols to use them as
-          data because Clojure has a special type specifically for this use case: the keyword
-        * To use the analogy of a dictionary,
-          the word in a dictionary entry is the symbol but the definition of the word is a binding of
-          that word to a particular meaning.
-    * keyword
-        * A key-
-          word is sort of like an autoquoted symbol: keywords never reference some other value
-          and always evaluate to themselves
-        * You can construct keywords and symbols from strings using the keyword and symbol
-          functions
-        * Keyword functions accept one or two arguments. The first argument is a map, and
-          the keyword looks itself up in this map.
-            * (:username person)
-            * (map :member-since users)
 ## polymorphism
 * Multimethods vs. Protocols
     * multimethod
