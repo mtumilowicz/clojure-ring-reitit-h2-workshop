@@ -19,6 +19,100 @@
     * https://stackoverflow.com/questions/5459865/how-can-i-throw-an-exception-in-clojure
     * https://stackoverflow.com/questions/7658981/how-to-reload-a-clojure-file-in-repl
     * https://clojure.org/guides/destructuring
+    * https://www.braveclojure.com/multimethods-records-protocols
+
+## preface
+* it may be worthwhile to refer first (basics): https://github.com/mtumilowicz/clojure-concurrency-stm-workshop
+* goals of this workshop
+    * introduction into clojure web development: ring, reitit
+    * show how to validate function arguments: struct
+    * show how to integrate with relational db: conman, mount
+    * advanced clojure features: threading, polymorphism, macros, pattern matching
+    * modeling domain with records
+    * practice destructuring
+
+## syntax
+* threading
+    * example
+        ```
+        (- (/ (+ c 3) 2) 1) // difficult to read, because it’s written inside out
+        ```
+        vs
+        ```
+        (-> c (+ 3) (/ 2) (- 1))
+        ```
+    * thread first: ->
+        * takes the first argument supplied and place it in the second position of the next expression
+        * example of how a macro can manipulate code to make it easier to read
+            * something like this is nearly impossible in most other languages
+        * useful for pulling nested data structures
+            ```
+            (-> person :employer :address :city)
+            ```
+            vs
+            ```
+            (:city (:address (:employer person)))
+            ```
+    * thread last: -->
+        * takes the first expression and moving it into the last place
+        * common use case: working with sequences and using map, reduce and filter
+            * these functions accepts the sequence as the last element
+    * two related ones: some-> and some->>
+        * computation ends if the result of any step in the expansion is nil
+* records
+    * custom, maplike data types (associate keys with values)
+    * example
+        ```
+        (defrecord Person [fname lname address])
+        (defrecord Address [street city state zip])
+
+        (def stu
+            (map->Planet {:fname "Stu"
+                          :lname "Halloway"
+                          :address (map-Address {
+                                :street "200 N Mangum"
+                                :city "Durham"
+                                :state "NC"
+                                :zip 27701})
+                          })) // factory methods map-EntityName, expects map
+        ```
+    * most of the time records are a better choice for domain entities than Map
+    * internals
+        * dynamically generate compiled bytecode for a named class with a set of given fields
+        * fields can have type hints, and can be primitive
+        * provides a complete implementation of a persistent map
+            * value-based equality and hashCode
+            * associative support
+            * keyword accessors for fields
+            * extensible fields (you can assoc keys not supplied with the defrecord definition)
+* destructuring
+    * without destructuring we have to bind with let
+        ```
+        (defn greet-user [person]
+              (let [first (:first-name person)
+                    last (:last-name person)]
+              (println "Welcome," first last)))
+        ```
+    * we can destructure it in method declaration
+        ```
+        (defn greet-user [{first :first-name last :last-name}]
+              (println "Welcome," first last)))
+        ```
+    * :or - supply a default value if the key is not present
+        ```
+        (defn greet-user [{first :first-name last :last-name} :or {:first "unknown" :last "unknown"}]
+              (println "Welcome," first last)))
+        ```
+    * :as - binds whole argument
+        ```
+        (defn greet-user [{first :first-name last :last-name} :as person]
+              (println "Welcome," first last)))
+        ```
+    * :keys - if local bindings and keys are the same
+        ```
+        (defn greet-user [{:keys [first-name last-name]}]
+                  (println "Welcome," first-name last-name))
+        ```
 
 ## ring
 * is a Clojure web applications library
@@ -136,99 +230,6 @@ your application more difficult
 * Routers can be configured via options.
     * :data	Initial route data
 
-## syntax
-* Records provide some class-like features —well-known fields and constructors
-  —to support domain entities.
-    * (defrecord Planet [name
-      moons
-      volume ;; km^3
-      mass ;; kg
-      aphelion ;; km, farthest from sun
-      perihelion ;; km, closest to sun
-      ])
-    *  there will be a positional factory function
-      ( ->Planet ) that expects a value for each attribute in the order specified by defrecord
-      and a map factory function ( map->Planet ) that expects a map with keyed values
-    * (map->Planet {:name "Earth"
-      :moons 1
-      :volume 1.08321e12
-      :mass 5.97219e24
-      :aphelion 152098232
-      :perihelion 147098290}))
-    * Maps and records both use the standard map collection functions for access
-      and modification, but most of the time records are a better choice for domain
-      entities.
-* destructuring
-    * (defn describe-salary [person]
-      (let [first (:first-name person)
-      last (:last-name person)
-      annual (:salary person)]
-      (println first last "earns" annual)))
-    * (defn describe-salary-2 [{first :first-name
-      last :last-name
-      annual :salary}]
-      (println first last "earns" annual))
-    * map destructuring
-        * (defn describe-salary-2 [{first :first-name
-          last :last-name
-          annual :salary}]
-          (println first last "earns" annual))
-        * Now suppose that you also want to bind a bonus
-          percentage, which may or may not exist.
-            * (defn describe-salary-3 [{first :first-name
-              last :last-name
-              annual :salary
-              bonus :bonus-percentage :or {bonus 5}}]
-            * The value for :or is a map where the bound symbol (here category) is bound to the expression "Category not found". When category is not found in client, it is instead found in the :or map and bound to that value instead.
-
-        * Finally, similar to the case of vectors, map bindings can use the :as option to bind the
-          complete hash map to a name.
-          * (defn describe-person [{first :first-name
-            last :last-name
-            bonus :bonus-percentage
-            :or {bonus 5}
-            :as p}]
-        * (defn greet-user [{:keys [first-name last-name]}]
-          (println "Welcome," first-name last-name))
-* threading
-    * ->>, ->, some->, some->>
-    * (defn final-amount [principle rate time-periods]
-      (* (Math/pow (+ 1 (/ rate 100)) time-periods) principle))
-        * function definition is difficult to read, because it’s written inside
-                      out, thanks to the prefix nature of Clojure’s syntax
-        * (defn final-amount-> [principle rate time-periods]
-          (-> rate
-          (/ 100)
-          (+ 1)
-          (Math/pow time-periods)
-          (* principle)))
-        * What the thread-first macro does is take the first argument supplied and place it in
-          the second position of the next expression
-        * This is an example of how a macro can
-          manipulate code to make it easier to read. Doing something like this is nearly impossi-
-          ble in most other languages.
-    * thread last
-        *  Instead of
-          taking the first expression and moving it into the second position of the next expres-
-          sion, it moves it into the last place.
-        * (defn factorial [n]
-          (reduce * (range 1 (+ 1 n))))
-        * (defn factorial->> [n]
-          (->> n
-          (+ 1)
-          (range 1)
-          (reduce *)))
-        * A far more common use of this macro is when working with sequences of data ele-
-          ments and using higher-order functions such as map , reduce , and filter
-        * Each of
-          these functions accepts the sequence as the last element, so the thread-last macro is
-          perfect for the job.
-    *  introduced two related
-      ones called some-> and some->> . These two behave exactly the same as the respec-
-      tive ones we just discussed, but computation ends if the result of any step in the
-      expansion is nil .
-* private methods
-    * (defn- update-calories
 ## polymorphism
 * Multimethods vs. Protocols
     * multimethod
