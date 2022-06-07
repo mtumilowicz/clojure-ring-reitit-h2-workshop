@@ -20,6 +20,8 @@
     * https://stackoverflow.com/questions/7658981/how-to-reload-a-clojure-file-in-repl
     * https://clojure.org/guides/destructuring
     * https://www.braveclojure.com/multimethods-records-protocols
+    * https://ilanuzan.medium.com/functional-polymorphism-using-clojures-multimethods-825c6f3666e6
+    * https://ilanuzan.medium.com/polymorphism-w-clojure-protocols-396ff472ff3c
 
 ## preface
 * it may be worthwhile to refer first (basics): https://github.com/mtumilowicz/clojure-concurrency-stm-workshop
@@ -30,6 +32,8 @@
     * advanced clojure features: threading, polymorphism, macros, pattern matching
     * modeling domain with records
     * practice destructuring
+* workshop plan
+    * add PATCH method - to edit person
 
 ## syntax
 * threading
@@ -86,33 +90,93 @@
             * keyword accessors for fields
             * extensible fields (you can assoc keys not supplied with the defrecord definition)
 * destructuring
-    * without destructuring we have to bind with let
-        ```
-        (defn greet-user [person]
-              (let [first (:first-name person)
-                    last (:last-name person)]
-              (println "Welcome," first last)))
-        ```
-    * we can destructure it in method declaration
-        ```
-        (defn greet-user [{first :first-name last :last-name}]
-              (println "Welcome," first last)))
-        ```
-    * :or - supply a default value if the key is not present
-        ```
-        (defn greet-user [{first :first-name last :last-name} :or {:first "unknown" :last "unknown"}]
-              (println "Welcome," first last)))
-        ```
-    * :as - binds whole argument
-        ```
-        (defn greet-user [{first :first-name last :last-name} :as person]
-              (println "Welcome," first last)))
-        ```
-    * :keys - if local bindings and keys are the same
-        ```
-        (defn greet-user [{:keys [first-name last-name]}]
-                  (println "Welcome," first-name last-name))
-        ```
+    * is a way to concisely bind names to the values inside a data structure
+    * is broken up into two categories
+        * sequential destructuring
+            ```
+            (let [[x y z] my-vector]
+              (println x y z))
+            ```
+            * if the vector is too small, the extra symbols will be bound to nil
+        * associative destructuring
+            * without destructuring we have to bind with let
+                ```
+                (defn greet-user [person]
+                      (let [first (:first-name person)
+                            last (:last-name person)]
+                      (println "Welcome," first last)))
+                ```
+            * we can destructure it in method declaration
+                ```
+                (defn greet-user [{first :first-name last :last-name}]
+                      (println "Welcome," first last)))
+                ```
+            * :or - supply a default value if the key is not present
+                ```
+                (defn greet-user [{first :first-name last :last-name} :or {:first "unknown" :last "unknown"}]
+                      (println "Welcome," first last)))
+                ```
+            * :as - binds whole argument
+                ```
+                (defn greet-user [{first :first-name last :last-name} :as person]
+                      (println "Welcome," first last)))
+                ```
+            * :keys - if local bindings and keys are the same
+                ```
+                (defn greet-user [{:keys [first-name last-name]}]
+                          (println "Welcome," first-name last-name))
+                ```
+## polymorphism
+* two approaches: multimethods and protocols
+    * multimethod
+        * example
+            ```
+            (defmulti make-sound :type)
+            (defmethod make-sound :Dog [x] "Woof Woof")
+            (defmethod make-sound :Cat [x] "Miauuu")
+
+            (make-sound {:type :Dog}) => "Woof Woof"
+            (make-sound {:type :Cat}) => "Miauuu"
+            ```
+        * `defmulti`: name, signature and dispatch function
+            * note that dispatch function can be any function
+                ```
+                (def QUICK-SORT-THRESHOLD 5)
+                (defmulti my-sort (fn [arr]
+                                    (if (every? integer? arr)
+                                       :counting-sort
+                                       (if (< (count arr) QUICK-SORT-THRESHOLD)
+                                          :quick-sort
+                                          :merge-sort))))
+                ```
+                * in an OOP language this behavior can’t be implemented in a Polymorphic way
+                    * it would have to be a code with an if statement
+        * `defmethod`: function implementation for a particular dispatch value
+        * default case: if no method is associated with the dispatching value, the multimethod will
+        look for a method associated with the default dispatching value (:default), and
+        will use that if present
+    * protocols
+        * replace what in an OOP language we know as interfaces
+        *
+        * example
+            ```
+
+            ```
+    * protocols are usually preferred for type-based dispatch
+        * have the ability to group related functions together in a single protocol
+* Parametric polymorphism
+    * You’ve actually already come in contact with polymorphism in Clojure. As you saw in
+      chapter 2, functions such as get , conj , assoc , map , into , reduce , and so on accept
+      many different types in their arguments but always do the correct thing.
+    * Clojure col-
+      lections are also polymorphic because they can hold items of any type.
+        * This kind of
+          polymorphism is called parametric polymorphism because such code mentions only
+          parameters and not types
+        * it’s also present in
+          some statically typed programming languages, both object-oriented languages such as
+          Java and C# (where it’s called generics)
+
 
 ## ring
 * is a Clojure web applications library
@@ -229,29 +293,6 @@ your application more difficult
   :path	:path-params
 * Routers can be configured via options.
     * :data	Initial route data
-
-## polymorphism
-* Multimethods vs. Protocols
-    * multimethod
-        * The defmulti form defines the name and signature of the
-          function as well as the dispatch function.
-        * Each defmethod form provides a function implementation for a particular dispatch value
-    * protocol
-        * Protocols also have the ability to group related functions together in a
-          single protocol. For these reasons, protocols are usually preferred for type-
-          based dispatch.
-* Parametric polymorphism
-    * You’ve actually already come in contact with polymorphism in Clojure. As you saw in
-      chapter 2, functions such as get , conj , assoc , map , into , reduce , and so on accept
-      many different types in their arguments but always do the correct thing.
-    * Clojure col-
-      lections are also polymorphic because they can hold items of any type.
-        * This kind of
-          polymorphism is called parametric polymorphism because such code mentions only
-          parameters and not types
-        * it’s also present in
-          some statically typed programming languages, both object-oriented languages such as
-          Java and C# (where it’s called generics)
 
 ## macros
 * Macros are the most distinguishing feature of Clojure when compared to languages
