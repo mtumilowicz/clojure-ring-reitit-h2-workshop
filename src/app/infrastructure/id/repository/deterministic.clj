@@ -4,7 +4,7 @@
 
 (def counter (atom 0))
 
-(deftype DeterministicIdRepository []
+(defrecord DeterministicIdRepository []
   IdRepository
   (generate [_]
     (swap! counter inc)

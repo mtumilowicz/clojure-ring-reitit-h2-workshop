@@ -3,7 +3,7 @@
     [app.domain.id.repository :refer [IdRepository]])
   (:import (java.util UUID)))
 
-(deftype UuidIdRepository []
+(defrecord UuidIdRepository []
   IdRepository
   (generate [_]
     str (UUID/randomUUID)))

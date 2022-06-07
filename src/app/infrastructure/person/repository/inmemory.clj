@@ -5,7 +5,7 @@
 
 (def persons (atom {}))
 
-(deftype PersonInMemoryRepository []
+(defrecord PersonInMemoryRepository []
   PersonRepository
   (save! [_ {:keys [id] :as obj}]
     (->> (either/safe-execute {:operation     (swap! persons assoc-in [(keyword (str id))] obj)

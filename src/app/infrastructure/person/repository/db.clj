@@ -9,7 +9,7 @@
   (Person/map->Person (clojure.set/rename-keys dbPerson {:first_name :firstName
                                                     :last_name  :lastName})))
 
-(deftype PersonDbRepository []
+(defrecord PersonDbRepository []
   PersonRepository
   (save! [_ obj]
     (->> (either/safe-execute {:operation     (db/create-person! obj)
