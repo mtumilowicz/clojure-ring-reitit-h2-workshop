@@ -6,7 +6,7 @@
             [app.infrastructure.person.module :as PersonModule]
             [app.infrastructure.id.module :as IdModule]))
 
-(def dependencies {:personRepository PersonModule/inMemoryRepository
+(def dependencies {:personRepository (PersonModule/inMemoryRepository (atom {}))
                    :idRepository     IdModule/deterministicRepository})
 (def app (Api/handler dependencies))
 (def root "/api/persons")

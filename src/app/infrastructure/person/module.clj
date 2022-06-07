@@ -3,6 +3,6 @@
     [app.infrastructure.person.repository.inmemory :as PersonInMemoryRepository]
     [app.infrastructure.person.repository.db :as PersonDbRepository]))
 
-(def inMemoryRepository (PersonInMemoryRepository/create))
+(defn inMemoryRepository [map] (PersonInMemoryRepository/create map))
 
 (def dbRepository (PersonDbRepository/create))
