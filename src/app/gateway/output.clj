@@ -17,5 +17,4 @@
 (defn from-domain-result [key result]
   (either/fold bad-request
                (partial response-ok key)
-               result)
-  )
+               result))
