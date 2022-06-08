@@ -22,6 +22,9 @@
     * https://www.braveclojure.com/multimethods-records-protocols
     * https://ilanuzan.medium.com/functional-polymorphism-using-clojures-multimethods-825c6f3666e6
     * https://ilanuzan.medium.com/polymorphism-w-clojure-protocols-396ff472ff3c
+    * https://ericnormand.me/mini-guide/deftype-vs-defrecord
+    * https://stackoverflow.com/questions/13150568/deftype-vs-defrecord
+    * https://stackoverflow.com/questions/37048167/what-is-the-difference-between-macroexpand-and-macroexpand-1-in-clojure
 
 ## preface
 * it may be worthwhile to refer first (basics): https://github.com/mtumilowicz/clojure-concurrency-stm-workshop
@@ -32,6 +35,8 @@
     * advanced clojure features: threading, polymorphism, macros, pattern matching
     * modeling domain with records
     * practice destructuring
+    * note that in this project we do standard dependency injection (map with dependencies passed
+    as a first param) - using components would be subject to different workshops
 * workshop plan
     * add PATCH method - to edit person
 
@@ -89,6 +94,9 @@
             * associative support
             * keyword accessors for fields
             * extensible fields (you can assoc keys not supplied with the defrecord definition)
+        * deftype vs defrecord
+            * deftype creates a bare-bones object which implements a protocol
+            * defrecord creates an immutable persistent map which implements a protocol
 * destructuring
     * is a way to concisely bind names to the values inside a data structure
     * is broken up into two categories
@@ -157,26 +165,81 @@
         will use that if present
     * protocols
         * replace what in an OOP language we know as interfaces
-        *
         * example
             ```
+            (defprotocol Shape
+              (area [this])
+              (perimeter [this]))
 
+            (defrecord Rectangle [width length]
+              Shape
+              (area [_] (* width length))
+              (perimeter [_] (+ (* 2 width) (* 2 length))))
+
+            (defrecord Square [side]
+              Shape
+              (area [_] (* side side))
+              (perimeter [_] (* 4 side)))
             ```
     * protocols are usually preferred for type-based dispatch
         * have the ability to group related functions together in a single protocol
-* Parametric polymorphism
-    * You’ve actually already come in contact with polymorphism in Clojure. As you saw in
-      chapter 2, functions such as get , conj , assoc , map , into , reduce , and so on accept
-      many different types in their arguments but always do the correct thing.
-    * Clojure col-
-      lections are also polymorphic because they can hold items of any type.
-        * This kind of
-          polymorphism is called parametric polymorphism because such code mentions only
-          parameters and not types
-        * it’s also present in
-          some statically typed programming languages, both object-oriented languages such as
-          Java and C# (where it’s called generics)
 
+## macros
+* most distinguishing feature of Clojure when compared to Java etc
+* Clojure runtime processes source code differently compared to other languages
+    1. read phase
+        * Clojure reader converts a stream of characters (the source code) into Clojure
+        data structures
+    1. evaluation phase
+        * data structures are then evaluated to execute the program
+    * Clojure offers a hook between the two phases
+        * sallow code to be modified programmatically before evaluation
+* hello world example
+    * similar tradition when it comes to explaining macros
+        * add `unless` control structure to the language
+    * without macros it is impossible
+        ```
+        (defn unless [test then]
+            (if (not test)
+            then))
+        ```
+        * all functions execute according to the following rules
+            * evaluate all arguments passed to the function call form
+            * evaluate the function using the values of the arguments
+        * remark: you can pass thunk (function) instead of then to dalay evaluation
+            ```
+            (defn unless [test then]
+                (if (not test)
+                (then)))
+            ```
+    * with macros
+        ```
+        (defmacro unless [test then]
+            `(if (not ~test)
+            ~then))
+        ```
+* syntax
+    * templating: backquote (`)
+    * inserting value: ~
+* verifying macros
+    * macroexpand-1
+        * if form represents a macro form, returns its expansion, else returns form
+    * macroexpand
+        * repeatedly calls macroexpand-1 on form until it no longer represents a macro form,
+        then returns it
+    * macroexpand vs macroexpand-1
+        ```
+        (defmacro inner-macro [arg]
+          `(println ~arg))
+
+        (defmacro top-level-macro [arg]
+          `(inner-macro ~arg))
+
+        (macroexpand-1 '(inner-macro "hello")) // (clojure.core/println "hello")
+        (macroexpand-1 '(top-level-macro "hello")) // (user/inner-macro "hello")
+        (macroexpand '(top-level-macro "hello")) // (clojure.core/println "hello")
+        ```
+* macros in syntax: when, when-not, cond, if-not, etc
 
 ## ring
 * is a Clojure web applications library
@@ -294,64 +357,11 @@ your application more difficult
 * Routers can be configured via options.
     * :data	Initial route data
 
-## macros
-* Macros are the most distinguishing feature of Clojure when compared to languages
-  such as Java and Ruby.
-* Recall from chapter 1 that the Clojure runtime processes source code differ-
-  ently compared to most other languages.
-    * Specifically, there’s a read phase followed by
-      an evaluation phase.
-    * In the first phase, the Clojure reader converts a stream of charac-
-      ters (the source code) into Clojure data structures
-    * These data structures are then
-      evaluated to execute the program. The trick that makes macros possible is that Clo-
-      jure offers a hook between the two phases, allowing the programmer to process the
-      data structures representing the code before they’re evaluated.
-* Macros allow code to be modified programmatically
-  before evaluation, making it possible to create whole new kinds of abstractions.
-* Since the book The C Programming Language came out, almost all programming lan-
-  guage books have used the “Hello, world!” program as an introductory example.
-    * There’s a similar tradition when it comes to explaining macros, and it involves adding
-      the unless control structure to the language.
-    * (defn unless [test then]
-      (if (not test)
-      then))
-    * The reason for this is
-      that unless is a function, and all functions execute according to the following rules:
-      1 Evaluate all arguments passed to the function call form.
-      2 Evaluate the function using the values of the arguments.
-    * Rule 1 causes the arguments to be evaluated. In the case of the unless function, those
-      are the test and then expressions.
-* (defmacro unless [test then]
-  (list 'if (list 'not test)
-  then))
-  * This generates an s-expression of the form (if (not test) then) when the macro is
-    expanded.
-  * macroexpand-1 is a useful function when writing macros, because it can be used to
-    check if the transformation of s-expressions is working correctly.
-  * What’s more, such macros are quite common. For instance, Clojure provides when ,
-    when-not , cond , if-not , and so on that are all constructs that allow conditional execu-
-    tion of code and are all implemented as macros.
-  * T EMPLATING USING THE BACKQUOTE ( ` ) MACRO
-    * (defmacro unless [test then]
-      `(if (not ~test)
-      ~then))
-    * The back-
-      quote starts the template.
-    * The template will be expanded into an s-expression and will
-      be returned as the return value of the macro.
-    * Things that do need to change—say, parameters passed to the macro—are
-      unquoted using the ~ character.
-
-* .edn
-* nil
 * validation
     * struct.core
 * syntax
     * clojure.set/rename-keys
     * constantly, #()
-    * keyword
-    * if-let
 * pattern matching
     * clojure.core.match :refer [match]
 * loading config
