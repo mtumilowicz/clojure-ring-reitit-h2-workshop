@@ -25,6 +25,8 @@
     * https://ericnormand.me/mini-guide/deftype-vs-defrecord
     * https://stackoverflow.com/questions/13150568/deftype-vs-defrecord
     * https://stackoverflow.com/questions/37048167/what-is-the-difference-between-macroexpand-and-macroexpand-1-in-clojure
+    * http://funcool.github.io/struct/latest/
+    * https://github.com/clojure/core.match
 
 ## preface
 * it may be worthwhile to refer first (basics): https://github.com/mtumilowicz/clojure-concurrency-stm-workshop
@@ -134,6 +136,47 @@
                 (defn greet-user [{:keys [first-name last-name]}]
                           (println "Welcome," first-name last-name))
                 ```
+* pattern matching
+    * https://github.com/clojure/core.match
+    * adds pattern matching support to the Clojure programming language
+    * examples
+        * vector
+            ```
+            (let [x [1 2 3]]
+              (match [x]
+                [[_ _ 2]] :a0
+                [[1 1 3]] :a1
+                [[1 2 3]] :a2
+                :else :a3))
+            ```
+        * map
+            ```
+            (let [x {:a 1 :b 1}]
+              (match [x]
+                [{:a _ :b 2}] :a0
+                [{:a 1 :b 1}] :a1
+                [{:c 3 :d _ :e 4}] :a2
+                :else nil))
+            ```
+        * types that we not control
+            * define accessors
+                ```
+                (extend-type java.util.Date
+                  clojure.core.match.protocols/IMatchLookup
+                  (val-at [this k not-found]
+                    (case k
+                      :day (.getDay this)
+                      :month (.getMonth this)
+                      :year (.getYear this)
+                      not-found)))
+                ```
+            * and then pattern match
+                ```
+                (match [(java.util.Date. 2010 10 1 12 30)]
+                   [{:year 2009 :month a}] a
+                   [{:year (:or 2010 2011) :month b}] b
+                   :else :no-match)
+                ```
 ## polymorphism
 * two approaches: multimethods and protocols
     * multimethod
@@ -241,6 +284,57 @@
         ```
 * macros in syntax: when, when-not, cond, if-not, etc
 
+## validation
+* https://github.com/funcool/struct - structural validation library
+* features
+    * no macros: validators are defined using plain data.
+    * dependent validators: the ability to access to already validated data
+    * coercion: the ability to coerce incoming values to other types
+    * no exceptions: no exceptions used in the validation process
+* by default
+    * all validators are optional
+        * to make the value mandatory, you should use a specific required validator
+    * additional entries in the map are not stripped
+        * (st/validate +scheme+ {:strip true})
+* example
+    ```
+    (require '[struct.core :as st]) // import
+
+    (def MoviePremierScheme
+      {:name [st/required st/string]
+       :year [st/required st/number]})
+
+    (-> {:name "Blood of Elves" :year 1994}
+        (st/validate MoviePremierScheme)) // [nil {:name "Blood of Elves" :year 1994}]
+
+    (-> {:year "1994"}
+        (st/validate MoviePremierScheme)) // [{:name "this field is mandatory", :year "must be a number"} {}]
+    ```
+* support for nested data structures
+    ```
+    (def PersonScheme
+      {[:personal-details :born-year] st/integer
+       [:address :street] st/string})
+    ```
+* custom messages
+    ```
+    (def schema
+      {:age [[st/in-range 18 26 :message "The age must be between %s and %s"]]})
+    ```
+    * wildcards will be replaced by args of validator
+* coercions
+    ```
+    (def schema
+      {:year [[st/integer :coerce str]]})
+
+    (def schema {:year [st/required st/integer-str] // predefined coercions
+                 :id [st/required st/uuid-str]})
+    ```
+
+## config
+
+## testing
+
 ## ring
 * is a Clojure web applications library
 * higher level frameworks such as Compojure or lib-noir use Ring as a common basis
@@ -285,6 +379,7 @@ your application more difficult
                 * `:form-params` - A map of parameters from submitted form data
                 * `:params` - A merged map of all parameters
             * `:query-string "q=clojure"` is transformed into `:query-params {"q" "clojure"}`
+
 ## reitit
 * fast data-driven router for Clojure
 * routes are defined as vectors of String path and optional (non-sequential) route argument
@@ -357,11 +452,6 @@ your application more difficult
 * Routers can be configured via options.
     * :data	Initial route data
 
-* validation
-    * struct.core
-* syntax
-    * clojure.set/rename-keys
-    * constantly, #()
 * pattern matching
     * clojure.core.match :refer [match]
 * loading config
