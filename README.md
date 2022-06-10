@@ -27,6 +27,7 @@
     * https://stackoverflow.com/questions/37048167/what-is-the-difference-between-macroexpand-and-macroexpand-1-in-clojure
     * http://funcool.github.io/struct/latest/
     * https://github.com/clojure/core.match
+    * https://github.com/tolitius/cprop
 
 ## preface
 * it may be worthwhile to refer first (basics): https://github.com/mtumilowicz/clojure-concurrency-stm-workshop
@@ -332,8 +333,34 @@
     ```
 
 ## config
+* cprop.core
+* loads an EDN config from a classpath and/or file system and merges it with system properties and ENV variables
+* returns an (immutable) map
+    * working with a config is no different than just working with a map
+* example
+    * config
+        ```
+        {:datomic
+            {:url "datomic:sql://?jdbc:postgresql://localhost:5432/datomic?user=datomic&password=datomic"}
+         :source
+            {:account
+                {:rabbit
+                   {:host "127.0.0.1"
+                    :port 5672
+                    :vhost "/z-broker"
+                    :username "guest"
+                    :password "guest"}}}
+         :answer 42}
+        ```
+    * config loading
+        ```
+        (def conf (load-config))
 
-## testing
+        (conf :answer) // 42
+        ```
+* by default cprop would look in two places for configuration files:
+    * classpath: for the config.edn resource
+    * file system: for a path identified by the conf system property
 
 ## ring
 * is a Clojure web applications library
@@ -451,9 +478,3 @@ your application more difficult
   :path	:path-params
 * Routers can be configured via options.
     * :data	Initial route data
-
-* pattern matching
-    * clojure.core.match :refer [match]
-* loading config
-    * cprop.core :refer [load-config]
-* testing
