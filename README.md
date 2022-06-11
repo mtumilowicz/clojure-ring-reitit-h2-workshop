@@ -348,7 +348,6 @@ as a first param) - using components would be subject to different workshops
         * if stateful things are kept lean and low level (i.e. I/O, queues, threads, connections, etc.),
         dependency graphs are simple and small
             * everything else is just namespaces and functions: the way it should be
-    * mount is to make the application state enjoyably reloadable
     * example
         * defining
             ```
@@ -361,6 +360,25 @@ as a first param) - using components would be subject to different workshops
             (ns app
               (:require [above :refer [conn]]))
             ```
+    * mount is to make the application state enjoyably reloadable
+        * mount has start and stop functions that will walk all the states created
+        with defstate and start / stop them accordingly
+        * reloading with REPL
+            ```
+            (mount/stop)
+            (mount/start)
+            ```
+    * dependencies are "injected" by requireing on the namespace level
+        * mount trusts the Clojure compiler to maintain the start and stop order for all the defstates
+    * The life cycle of these resources is managed by the Mount library. It provides
+      a defstate macro that allows us to declare something which can be started and
+      stopped, such as a database connection, a thread-pool, or an HTTP server.
+        * These are sometimes referred to as resources or components.
+        * We provide :start
+          and :stop keys that specify the code that should run when the resource is
+          started and stopped, respectively.
+        * Once a resource is started, the return value
+          of the :start function is bound to the symbol we used in our defstate .
 * luminus database connection management and SQL query generation library
 * provides pooled connections using the HikariCP library
 * queries are generated using HugSQL and wrapped with connection aware functions
@@ -376,6 +394,17 @@ as a first param) - using components would be subject to different workshops
             values (:name, :specialty)
             ```
         * then
+* queries are bound to the connection using the bind-connection macro
+    * macro accepts the connection var followed by one or more strings representing SQL query files
+    * example
+        ```
+        (conman/bind-connection *db* "sql/queries.sql")
+        ```
+    * bind-connection generates functions from sql in the current namespace
+    * connect! function should be called to initialize the database connection
+    *  it's possible to use the with-transaction macro to rebind it to the transaction connection
+
+
 
 ## config
 * cprop.core
