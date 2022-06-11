@@ -28,18 +28,22 @@
     * http://funcool.github.io/struct/latest/
     * https://github.com/clojure/core.match
     * https://github.com/tolitius/cprop
+    * https://github.com/luminus-framework/conman
+    * https://github.com/layerware/hugsql
+    * https://github.com/tolitius/mount
 
 ## preface
-* it may be worthwhile to refer first (basics): https://github.com/mtumilowicz/clojure-concurrency-stm-workshop
+* it may be worthwhile to refer first (basics)
+    * https://github.com/mtumilowicz/clojure-concurrency-stm-workshop
 * goals of this workshop
     * introduction into clojure web development: ring, reitit
-    * show how to validate function arguments: struct
-    * show how to integrate with relational db: conman, mount
+    * introduction to validation with struct
+    * show how to integrate with relational db: conman, mount, hugsql
     * advanced clojure features: threading, polymorphism, macros, pattern matching
     * modeling domain with records
     * practice destructuring
-    * note that in this project we do standard dependency injection (map with dependencies passed
-    as a first param) - using components would be subject to different workshops
+* note that in this project we do standard dependency injection (map with dependencies passed
+as a first param) - using components would be subject to different workshops
 * workshop plan
     * add PATCH method - to edit person
 
@@ -331,6 +335,47 @@
     (def schema {:year [st/required st/integer-str] // predefined coercions
                  :id [st/required st/uuid-str]})
     ```
+
+## conman
+* how to manage state in application
+    * either use components or mount
+    * components vs mount
+        * framework vs lib
+        * if a managing state library requires a whole app buy-in
+            * where everything is a bean or a component - it is a framework
+            * dependency graph is usually quite large and complex
+                * it has everything (every piece of the application) in it
+        * if stateful things are kept lean and low level (i.e. I/O, queues, threads, connections, etc.),
+        dependency graphs are simple and small
+            * everything else is just namespaces and functions: the way it should be
+    * mount is to make the application state enjoyably reloadable
+    * example
+        * defining
+            ```
+            (require '[mount.core :refer [defstate]])
+
+            (defstate conn :start (create-conn))
+            ```
+        * using
+            ```
+            (ns app
+              (:require [above :refer [conn]]))
+            ```
+* luminus database connection management and SQL query generation library
+* provides pooled connections using the HikariCP library
+* queries are generated using HugSQL and wrapped with connection aware functions
+* HugSql
+    * can find any SQL file in your classpath
+    * example
+        * first, define in someName.sql file:
+            ```
+            -- A :result value of :n below will return affected rows:
+            -- :name insert-character :! :n
+            -- :doc Insert a single character returning affected row count
+            insert into characters (name, specialty)
+            values (:name, :specialty)
+            ```
+        * then
 
 ## config
 * cprop.core
