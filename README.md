@@ -1,3 +1,6 @@
+[![Build Status](https://app.travis-ci.com/mtumilowicz/clojure-ring-reitit-h2-workshop.svg?branch=master)](https://app.travis-ci.com/mtumilowicz/clojure-ring-reitit-h2-workshop)
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+
 # clojure-ring-reitit-h2-workshop
 * references
     * https://cemerick.com/blog/2011/07/05/flowchart-for-choosing-the-right-clojure-type-definition-form.html
