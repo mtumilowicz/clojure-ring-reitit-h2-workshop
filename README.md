@@ -32,6 +32,7 @@
     * https://github.com/layerware/hugsql
     * https://github.com/tolitius/mount
     * https://medium.com/pragmatic-programmers/use-hugsql-c3cf85e53678
+    * https://github.com/edn-format/edn
 
 ## preface
 * it may be worthwhile to refer first (basics)
@@ -42,11 +43,121 @@
     * show how to integrate with relational db: conman, mount, hugsql
     * advanced clojure features: threading, polymorphism, macros, pattern matching
     * modeling domain with records
-    * practice destructuring
-* note that in this project we do standard dependency injection (map with dependencies passed
-as a first param) - using components would be subject to different workshops
+    * practicing destructuring
+* note that in this project we have standard dependency injection (map with dependencies passed
+as a first param)
+    * components would be subject to different workshops
 * workshop plan
-    * add PATCH method - to edit person
+    * add PATCH method - to edit parts of person data
+
+## macros
+* most distinguishing feature of Clojure when compared to Java etc
+* Clojure runtime processes source code differently compared to other languages
+    1. read phase: reader converts a stream of characters (the source code) into Clojure data structures
+    1. evaluation phase: data structures are evaluated to execute the program
+    * Clojure offers a hook between the two phases
+        * allow code to be modified programmatically before evaluation
+* hello world example
+    * similar tradition when it comes to explaining macros
+        * add `unless` control structure to the language
+    * without macros it is impossible
+        ```
+        (defn unless [test then]
+            (if (not test)
+            then))
+        ```
+        * all functions execute according to the following rules
+            * evaluate all arguments passed to the function call form
+            * evaluate the function using the values of the arguments
+        * remark: you can pass thunk (function) instead of then to delay evaluation (it changes sematics)
+            ```
+            (defn unless [test then]
+                (if (not test)
+                (then)))
+            ```
+    * with macros
+        ```
+        (defmacro unless [test then]
+            `(if (not ~test)
+            ~then))
+        ```
+* syntax
+    * templating: backquote (`)
+    * inserting value: ~
+* verifying macros
+    * `macroexpand-1`
+        * if form represents a macro form, returns its expansion, else returns form
+    * `macroexpand`
+        * repeatedly calls `macroexpand-1` on form until it no longer represents a macro form, then returns it
+    * `macroexpand` vs `macroexpand-1`
+        ```
+        (defmacro inner-macro [arg]
+          `(println ~arg))
+
+        (defmacro top-level-macro [arg]
+          `(inner-macro ~arg))
+
+        (macroexpand-1 '(inner-macro "hello")) // (clojure.core/println "hello")
+        (macroexpand-1 '(top-level-macro "hello")) // (user/inner-macro "hello")
+        (macroexpand '(top-level-macro "hello")) // (clojure.core/println "hello")
+        ```
+* macros in syntax: `when`, `when-not`, `cond`, `if-not`, etc
+
+## polymorphism
+* two approaches: multimethods and protocols
+* multimethod
+    * example
+        ```
+        (defmulti make-sound :type)
+        (defmethod make-sound :Dog [x] "Woof Woof")
+        (defmethod make-sound :Cat [x] "Miauuu")
+
+        (make-sound {:type :Dog}) => "Woof Woof"
+        (make-sound {:type :Cat}) => "Miauuu"
+        ```
+    * `defmulti`: name, signature and dispatch function
+        * note that dispatch function can be any function
+            ```
+            (def QUICK-SORT-THRESHOLD 5)
+
+            (defmulti my-sort (fn [arr]
+                                (if (every? integer? arr)
+                                   :counting-sort
+                                   (if (< (count arr) QUICK-SORT-THRESHOLD)
+                                      :quick-sort
+                                      :merge-sort))))
+            ```
+            * in an OOP language this behavior can’t be implemented in a Polymorphic way
+                * it would have to be a code with an if statement
+    * `defmethod`: function implementation for a particular dispatch value
+    * default case: if no method is associated with the dispatching value, the multimethod will
+    look for a method associated with the default dispatching value (:default), and
+    will use that if present
+* protocols
+    * replace what in an OOP language we know as interfaces
+    * example
+        ```
+        (defprotocol Shape
+          (area [this])
+          (perimeter [this]))
+        (defrecord Rectangle [width length]
+          Shape
+          (area [_] (* width length))
+          (perimeter [_] (+ (* 2 width) (* 2 length))))
+        (defrecord Square [side]
+          Shape
+          (area [_] (* side side))
+          (perimeter [_] (* 4 side)))
+
+        (def square (->Square 4))
+        (def rectangle (->Rectangle 2 5))
+
+        (map area [square rectangle])   // (16 10)
+        (map :side [square rectangle])  // (4 nil)
+        (map :length [square rectangle])     // (nil 5)
+        ```
+* protocols are usually preferred for type-based dispatch
+    * have the ability to group related functions together in a single protocol
 
 ## syntax
 * threading
@@ -58,7 +169,7 @@ as a first param) - using components would be subject to different workshops
         ```
         (-> c (+ 3) (/ 2) (- 1))
         ```
-    * thread first: ->
+    * thread first: `->`
         * takes the first argument supplied and place it in the second position of the next expression
         * example of how a macro can manipulate code to make it easier to read
             * something like this is nearly impossible in most other languages
@@ -70,12 +181,12 @@ as a first param) - using components would be subject to different workshops
             ```
             (:city (:address (:employer person)))
             ```
-    * thread last: -->
+    * thread last: `->>`
         * takes the first expression and moving it into the last place
-        * common use case: working with sequences and using map, reduce and filter
+        * common use case: working with sequences + using map, reduce and filter
             * these functions accepts the sequence as the last element
-    * two related ones: some-> and some->>
-        * computation ends if the result of any step in the expansion is nil
+    * two related ones: `some->` and `some->>`
+        * computation ends if the result of any step in the expansion is `nil`
 * records
     * custom, maplike data types (associate keys with values)
     * example
@@ -91,7 +202,7 @@ as a first param) - using components would be subject to different workshops
                                 :city "Durham"
                                 :state "NC"
                                 :zip 27701})
-                          })) // factory methods map-EntityName, expects map
+                          })) // factory methods map-EntityName; expects map
         ```
     * most of the time records are a better choice for domain entities than Map
     * internals
@@ -115,35 +226,33 @@ as a first param) - using components would be subject to different workshops
             ```
             * if the vector is too small, the extra symbols will be bound to nil
         * associative destructuring
-            * without destructuring we have to bind with let
-                ```
-                (defn greet-user [person]
-                      (let [first (:first-name person)
-                            last (:last-name person)]
-                      (println "Welcome," first last)))
-                ```
+            ```
+            (defn greet-user [person]
+                  (let [first (:first-name person)
+                        last (:last-name person)]
+                  (println "Welcome," first last)))
+            ```
             * we can destructure it in method declaration
                 ```
                 (defn greet-user [{first :first-name last :last-name}]
                       (println "Welcome," first last)))
                 ```
-            * :or - supply a default value if the key is not present
+            * `:or` - supply a default value if the key is not present
                 ```
                 (defn greet-user [{first :first-name last :last-name} :or {:first "unknown" :last "unknown"}]
                       (println "Welcome," first last)))
                 ```
-            * :as - binds whole argument
+            * `:as` - binds whole argument
                 ```
                 (defn greet-user [{first :first-name last :last-name} :as person]
                       (println "Welcome," first last)))
                 ```
-            * :keys - if local bindings and keys are the same
+            * `:keys` - if local bindings and keys are the same
                 ```
                 (defn greet-user [{:keys [first-name last-name]}]
-                          (println "Welcome," first-name last-name))
+                      (println "Welcome," first-name last-name))
                 ```
 * pattern matching
-    * https://github.com/clojure/core.match
     * adds pattern matching support to the Clojure programming language
     * examples
         * vector
@@ -183,115 +292,10 @@ as a first param) - using components would be subject to different workshops
                    [{:year (:or 2010 2011) :month b}] b
                    :else :no-match)
                 ```
-## polymorphism
-* two approaches: multimethods and protocols
-    * multimethod
-        * example
-            ```
-            (defmulti make-sound :type)
-            (defmethod make-sound :Dog [x] "Woof Woof")
-            (defmethod make-sound :Cat [x] "Miauuu")
-
-            (make-sound {:type :Dog}) => "Woof Woof"
-            (make-sound {:type :Cat}) => "Miauuu"
-            ```
-        * `defmulti`: name, signature and dispatch function
-            * note that dispatch function can be any function
-                ```
-                (def QUICK-SORT-THRESHOLD 5)
-                (defmulti my-sort (fn [arr]
-                                    (if (every? integer? arr)
-                                       :counting-sort
-                                       (if (< (count arr) QUICK-SORT-THRESHOLD)
-                                          :quick-sort
-                                          :merge-sort))))
-                ```
-                * in an OOP language this behavior can’t be implemented in a Polymorphic way
-                    * it would have to be a code with an if statement
-        * `defmethod`: function implementation for a particular dispatch value
-        * default case: if no method is associated with the dispatching value, the multimethod will
-        look for a method associated with the default dispatching value (:default), and
-        will use that if present
-    * protocols
-        * replace what in an OOP language we know as interfaces
-        * example
-            ```
-            (defprotocol Shape
-              (area [this])
-              (perimeter [this]))
-
-            (defrecord Rectangle [width length]
-              Shape
-              (area [_] (* width length))
-              (perimeter [_] (+ (* 2 width) (* 2 length))))
-
-            (defrecord Square [side]
-              Shape
-              (area [_] (* side side))
-              (perimeter [_] (* 4 side)))
-            ```
-    * protocols are usually preferred for type-based dispatch
-        * have the ability to group related functions together in a single protocol
-
-## macros
-* most distinguishing feature of Clojure when compared to Java etc
-* Clojure runtime processes source code differently compared to other languages
-    1. read phase
-        * Clojure reader converts a stream of characters (the source code) into Clojure
-        data structures
-    1. evaluation phase
-        * data structures are then evaluated to execute the program
-    * Clojure offers a hook between the two phases
-        * sallow code to be modified programmatically before evaluation
-* hello world example
-    * similar tradition when it comes to explaining macros
-        * add `unless` control structure to the language
-    * without macros it is impossible
-        ```
-        (defn unless [test then]
-            (if (not test)
-            then))
-        ```
-        * all functions execute according to the following rules
-            * evaluate all arguments passed to the function call form
-            * evaluate the function using the values of the arguments
-        * remark: you can pass thunk (function) instead of then to dalay evaluation
-            ```
-            (defn unless [test then]
-                (if (not test)
-                (then)))
-            ```
-    * with macros
-        ```
-        (defmacro unless [test then]
-            `(if (not ~test)
-            ~then))
-        ```
-* syntax
-    * templating: backquote (`)
-    * inserting value: ~
-* verifying macros
-    * macroexpand-1
-        * if form represents a macro form, returns its expansion, else returns form
-    * macroexpand
-        * repeatedly calls macroexpand-1 on form until it no longer represents a macro form,
-        then returns it
-    * macroexpand vs macroexpand-1
-        ```
-        (defmacro inner-macro [arg]
-          `(println ~arg))
-
-        (defmacro top-level-macro [arg]
-          `(inner-macro ~arg))
-
-        (macroexpand-1 '(inner-macro "hello")) // (clojure.core/println "hello")
-        (macroexpand-1 '(top-level-macro "hello")) // (user/inner-macro "hello")
-        (macroexpand '(top-level-macro "hello")) // (clojure.core/println "hello")
-        ```
-* macros in syntax: when, when-not, cond, if-not, etc
 
 ## validation
-* https://github.com/funcool/struct - structural validation library
+* using: https://github.com/funcool/struct
+    * structural validation library
 * features
     * no macros: validators are defined using plain data.
     * dependent validators: the ability to access to already validated data
@@ -301,10 +305,10 @@ as a first param) - using components would be subject to different workshops
     * all validators are optional
         * to make the value mandatory, you should use a specific required validator
     * additional entries in the map are not stripped
-        * (st/validate +scheme+ {:strip true})
+        * `(st/validate +scheme+ {:strip true})`
 * example
     ```
-    (require '[struct.core :as st]) // import
+    (require '[struct.core :as st])
 
     (def MoviePremierScheme
       {:name [st/required st/string]
@@ -316,6 +320,7 @@ as a first param) - using components would be subject to different workshops
     (-> {:year "1994"}
         (st/validate MoviePremierScheme)) // [{:name "this field is mandatory", :year "must be a number"} {}]
     ```
+    * then we could pattern match
 * support for nested data structures
     ```
     (def PersonScheme
@@ -337,56 +342,53 @@ as a first param) - using components would be subject to different workshops
                  :id [st/required st/uuid-str]})
     ```
 
-## conman
+## mount
 * how to manage state in application
     * either use components or mount
     * components vs mount
         * framework vs lib
-        * if a managing state library requires a whole app buy-in
-            * where everything is a bean or a component - it is a framework
+        * if a managing state library requires a whole app buy-in - it is a framework
             * dependency graph is usually quite large and complex
                 * it has everything (every piece of the application) in it
         * if stateful things are kept lean and low level (i.e. I/O, queues, threads, connections, etc.),
         dependency graphs are simple and small
             * everything else is just namespaces and functions: the way it should be
-    * example
-        * defining
-            ```
-            (require '[mount.core :refer [defstate]])
+* provides a defstate macro that allows us to declare something which can be started and stopped
+    * example: database connection, a thread-pool, or an HTTP server
+        * sometimes referred to as resources
+    * we provide :start and :stop keys
+        * specify the code that should run when the resource is started and stopped, respectively
+    * once a resource is started, the return value of the :start function is bound to the symbol we used in our defstate
+* example
+    * defining
+        ```
+        (require '[mount.core :refer [defstate]])
+        (defstate conn :start (create-conn))
+        ```
+    * using
+        ```
+        (ns app
+          (:require [above :refer [conn]]))
+        ```
+* to make the application state enjoyably reloadable
+    * mount has start and stop functions that will walk all the states created
+    with defstate and start / stop them accordingly
+    * reloading with REPL
+        ```
+        (mount/stop)
+        (mount/start)
+        ```
+* dependencies are "injected" by requiring on the namespace level
+    * mount trusts the Clojure compiler to maintain the start and stop order for all the defstates
 
-            (defstate conn :start (create-conn))
-            ```
-        * using
-            ```
-            (ns app
-              (:require [above :refer [conn]]))
-            ```
-    * mount is to make the application state enjoyably reloadable
-        * mount has start and stop functions that will walk all the states created
-        with defstate and start / stop them accordingly
-        * reloading with REPL
-            ```
-            (mount/stop)
-            (mount/start)
-            ```
-    * dependencies are "injected" by requireing on the namespace level
-        * mount trusts the Clojure compiler to maintain the start and stop order for all the defstates
-    * The life cycle of these resources is managed by the Mount library. It provides
-      a defstate macro that allows us to declare something which can be started and
-      stopped, such as a database connection, a thread-pool, or an HTTP server.
-        * These are sometimes referred to as resources or components.
-        * We provide :start
-          and :stop keys that specify the code that should run when the resource is
-          started and stopped, respectively.
-        * Once a resource is started, the return value
-          of the :start function is bound to the symbol we used in our defstate .
+## conman
 * luminus database connection management and SQL query generation library
 * provides pooled connections using the HikariCP library
 * queries are generated using HugSQL and wrapped with connection aware functions
 * HugSql
     * can find any SQL file in your classpath
     * example
-        * first, define in users.sql file:
+        * first, define in `users.sql` file:
             ```
             -- :name add-user! :! :n
             -- :doc  adds a new user
@@ -397,44 +399,56 @@ as a first param) - using components would be subject to different workshops
         * then
             ```
             (hugsql/def-db-fns "users.sql")
-
             (add-user! db {:id "hug" :pass "sql"})
             ```
-            * The function accepts the database connection as its first parameter, followed by the query map
-                * Note that the keys in the map have the same names as those we defined earlier in the users.sql file
-                *
-    * HugSQL uses specially formatted SQL comments as metadata for defining functions that interact with the database
-        * The name of the function that runs the query is defined using the — :name comment.
-        * The preceding query uses the :! flag to indicate that the function modifies the data
-        * uses the :n key to indicate that it returns the number of rows that were affected
-        * :query or :? — indicates a query with a result set.
-          :execute or :! — can be used for any statement.
-          :returning-execute or :<! — is used to indicate an INSERT … RETURNING query.
-          :insert or :i! — attempts to return the generated keys.
-        * :one or :1 — a result with a single row.
-          :many or :* — a result with multiple rows.
-          :affected or :n — the number of affected rows.
-          :raw — the result generated by the underlying database adapter.
-        * The only things to note about the SQL statement itself are the placeholder keys for the VALUES. HugSQL uses these keys to look up the parameters in the input map when the generated function is called.
-* queries are bound to the connection using the bind-connection macro
+            * function accepts the database connection as its first parameter, followed by the query map
+                * keys in the map have the same names as those we defined earlier in the `users.sql` file
+    * uses specially formatted SQL comments as metadata for defining functions
+        * `:name` - name of the function
+        * `:execute` or `:!` — can be used for any statement
+            * indicates that the function modifies the data
+        * `:query` or `:?` — indicates a query with a result set
+        * `:returning-execute` or `:<!` — is used to indicate an INSERT … RETURNING
+        * `:insert` or `:i!` — attempts to return the generated keys
+        * return hints
+            * `:one` or `:1` — a result with a single row
+            * `:many` or `:*` — a result with multiple rows
+            * `:affected` or `:n` — the number of affected rows
+            * `:raw` — the result generated by the underlying database adapter
+        * placeholder keys for the VALUES
+            * HugSQL uses these keys to look up the parameters in the input map when the generated function is called
+* queries are bound to the connection using the `bind-connection` macro
     * macro accepts the connection var followed by one or more strings representing SQL query files
     * example
         ```
         (conman/bind-connection *db* "sql/queries.sql")
         ```
-    * bind-connection generates functions from sql in the current namespace
-    * connect! function should be called to initialize the database connection
-    *  it's possible to use the with-transaction macro to rebind it to the transaction connection
-
-
+    * `bind-connection` generates functions from sql in the current namespace
+* `connect!` function should be called to initialize the database connection
+    ```
+    (defstate ^:dynamic *db*
+              :start (conman/connect! {:jdbc-url (env :database-url)})
+              :stop (conman/disconnect! *db*))
+    ```
+*  it's possible to use the `with-transaction` macro to rebind it to the transaction connection
 
 ## config
 * cprop.core
 * loads an EDN config from a classpath and/or file system and merges it with system properties and ENV variables
-* returns an (immutable) map
-    * working with a config is no different than just working with a map
+    * returns an (immutable) map
+        * working with a config is no different than just working with a map
+    * edn digression
+        * extensible data notation
+        * used by Datomic and other applications as a data transfer format
+        * includes keywords, symbols, strings, numbers, lists, sets, vectors, and maps
+        * tags are the core differentiator
+            * reason why it's called Extensible Data Notation
+            * # character allows the subsequent form to be parsed in a special way
+            * example
+                * #uuid tag converts a string representation of a UUID into the environment’s
+                underlying UUID implementation (e.g. java.util.UUID )
 * example
-    * config
+    * definition
         ```
         {:datomic
             {:url "datomic:sql://?jdbc:postgresql://localhost:5432/datomic?user=datomic&password=datomic"}
@@ -448,7 +462,7 @@ as a first param) - using components would be subject to different workshops
                     :password "guest"}}}
          :answer 42}
         ```
-    * config loading
+    * loading
         ```
         (def conf (load-config))
 
@@ -461,12 +475,11 @@ as a first param) - using components would be subject to different workshops
 ## ring
 * is a Clojure web applications library
 * higher level frameworks such as Compojure or lib-noir use Ring as a common basis
-* without a basic understanding of Ring, you cannot write middleware, and you may find debugging
-your application more difficult
+    * good to have a basic understanding of Ring
 * supports synchronous and asynchronous endpoints and middleware
     * we focus here only on synchronous part
-* A web application developed for Ring consists of four components:
-    * Handler
+* four components:
+    * handler
         * **synchronous** handlers
             ```
             (defn what-is-my-ip [request]
@@ -474,15 +487,17 @@ your application more difficult
                :headers {"Content-Type" "text/plain"}
                :body (:remote-addr request)})
             ```
-    * Request
+    * request
         * represented by Clojure maps
         * some standard keys: `:headers`, `:body`, `:content-type`, `:path-params`
-    * Response
-        * is created by the handler, and contains three keys: `:status`, `:headers`, `:body`
-    * Middleware
-        * higher-level functions that add additional functionality to handlers
-        * first argument of a middleware function should be a handler, and its return value should be a new
-        handler function that will call the original handler
+    * response
+        * created by the handler
+        * contains three keys: `:status`, `:headers`, `:body`
+    * middleware
+        * higher-level functions
+        * adds additional functionality to handlers
+        * first argument of a middleware function should be a handler
+        * its return value should be a new handler function
         * threading macro (->) can be used to chain middleware together
             ```
             (def app
@@ -492,16 +507,17 @@ your application more difficult
                   (wrap-params)))
             ```
         * muuntaja/wrap-formats
-            * negotiates a request body based on accept, accept-charset and content-type headers and decodes the body
-            with an attached Muuntaja instance into `:body-params`
+            * negotiates a request body based on accept, accept-charset and content-type headers
+                * decodes the body with an attached Muuntaja instance into `:body-params`
             * encodes also the response body
         * query params
-            * `[app.gateway.middleware :refer [wrap-params]`
-            * adds three new keys to the request map:
-                * `:query-params` - A map of parameters from the query string
-                * `:form-params` - A map of parameters from submitted form data
-                * `:params` - A merged map of all parameters
-            * `:query-string "q=clojure"` is transformed into `:query-params {"q" "clojure"}`
+            * required: `[app.gateway.middleware :refer [wrap-params]`
+                * adds three new keys to the request map:
+                    * `:query-params` - map of parameters from the query string
+                    * `:form-params` - map of parameters from submitted form data
+                    * `:params` - merged map of all parameters
+                * example
+                    * `:query-string "q=clojure"` is transformed into `:query-params {"q" "clojure"}`
 
 ## reitit
 * fast data-driven router for Clojure
