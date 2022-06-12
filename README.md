@@ -521,23 +521,25 @@ as a first param)
 
 ## reitit
 * fast data-driven router for Clojure
-* routes are defined as vectors of String path and optional (non-sequential) route argument
+* routes are defined as vectors
+    * [String path and optional (non-sequential) route argument]
 * paths can have path-parameters (:id) or catch-all-parameters (*path)
 * example
-    ```
-    ["/api"
-     ["/admin" {:middleware [middleware-wrappers...]}
-      ["" admin-handler]
-      ["/db" db-handler]]
-     ["/ping" ping-handler]]
-    ```
-    and with router
-    ```
-    (def router
-      (r/router routes))
-    ```
+    * define routes
+        ```
+        ["/api"
+         ["/admin" {:middleware [middleware-wrappers...]}
+          ["" admin-handler]
+          ["/db" db-handler]]
+         ["/ping" ping-handler]]
+        ```
+    * and create router
+        ```
+        (def router
+          (r/router routes))
+        ```
 * coercion
-    * is a process of transforming parameters (and responses) from one format into another
+    * process of transforming parameters (and responses) from one format into another
     * by default, all wildcard and catch-all parameters are parsed into strings
     * problem
         ```
@@ -566,27 +568,20 @@ as a first param)
            (constantly (response/not-acceptable "406 - Not acceptable"))})))
     ```
 * exception handling
-    * it's good to add `{:exception pretty/exception}` because it makes routing errors (for example conflicting route)
-    increases readability of errors
-        * Exceptions thrown in router creation
-* reitit.ring.middleware.dev/print-request-diffs
-    * prints a request and response diff between each middleware
-* Wrapper for Muuntaja middleware for content negotiation, request decoding and response encoding
-    * you can compose your new muuntaja instance with as many options as you need
-    * example
-        ```
-        (def new-muuntaja
-          (m/create
-           (-> m/default-options
-               (assoc-in [:formats "application/json" :decoder-opts :bigdecimals] true)
-               (assoc-in [:formats "application/json" :encoder-opts :date-format] "yyyy-MM-dd"))))
-        ```
-* The following request parameters are currently supported:
-  type	request source
-  :query	:query-params
-  :body	:body-params
-  :form	:form-params
-  :header	:header-params
-  :path	:path-params
-* Routers can be configured via options.
-    * :data	Initial route data
+    * good practice
+        * add `{:exception pretty/exception}`
+        * it makes routing errors (for example conflicting route) increases readability of errors
+        * only for exceptions thrown in router creation
+* middleware
+    * debugging
+        * `reitit.ring.middleware.dev/print-request-diffs`
+            * prints a request and response diff between each middleware
+    * custom param decoders
+        * example
+            ```
+            (def new-muuntaja
+              (m/create
+               (-> m/default-options
+                   (assoc-in [:formats "application/json" :decoder-opts :bigdecimals] true)
+                   (assoc-in [:formats "application/json" :encoder-opts :date-format] "yyyy-MM-dd"))))
+            ```
