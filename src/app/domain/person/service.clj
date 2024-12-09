@@ -6,18 +6,18 @@
     [app.domain.person.new-person-command :as NewPersonCommand]
     [app.domain.either :as Either]))
 
-(defn assignId [dependencies newPersonCommand]
-  (let [id (IdService/generate dependencies)]
+(defn assignId [idRepository newPersonCommand]
+  (let [id (IdService/generate idRepository)]
     (NewPersonCommand/assign-id id newPersonCommand)))
 
-(defn save [{:keys [personRepository] :as dependencies} newPersonCommand]
+(defn save [personRepository idRepository newPersonCommand]
   (->> newPersonCommand
        (Parser/parse NewPersonCommand/Schema)
-       (Either/map #(assignId dependencies %))
+       (Either/map #(assignId idRepository %))
        (Either/flat-map #(PersonRepository/save! personRepository %))))
 
-(defn getAll [{:keys [personRepository]}]
+(defn getAll [personRepository]
   (PersonRepository/getAll personRepository))
 
-(defn deleteById [{:keys [personRepository]} id]
+(defn deleteById [personRepository id]
   (PersonRepository/deleteById personRepository id))
