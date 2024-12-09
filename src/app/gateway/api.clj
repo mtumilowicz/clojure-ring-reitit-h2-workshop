@@ -7,14 +7,14 @@
             [reitit.ring.middleware.dev]
             [app.gateway.middleware :refer [wrap-formats]]))
 
-(defn routes [dependencies]
-  [(EchoController/routes dependencies)
-   (PersonController/routes dependencies)])
+(defn routes [personRepository idRepository]
+  [(EchoController/routes [])
+   (PersonController/routes personRepository idRepository)])
 
 
-(defn handler [dependencies]
+(defn handler [personRepository idRepository]
   (reitit/ring-handler
-    (reitit/router (routes dependencies)
+    (reitit/router (routes personRepository idRepository)
                    {:exception pretty/exception
                     :data {:middleware [wrap-formats]}})
     (reitit/create-default-handler

@@ -8,7 +8,8 @@
 
 (def dependencies {:personRepository (PersonModule/inMemoryRepository (atom {}))
                    :idRepository     IdModule/deterministicRepository})
-(def app (Api/handler dependencies))
+(def app (Api/handler (:personRepository dependencies)
+                      (:idRepository dependencies)))
 (def root "/api/persons")
 
 (deftest test-app
