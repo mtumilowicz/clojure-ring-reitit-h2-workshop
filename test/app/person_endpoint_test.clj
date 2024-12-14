@@ -1,15 +1,19 @@
 (ns app.person-endpoint-test
-  (:require [clojure.test :refer :all]
+  (:require [app.domain.id.service :as IdService]
+            [clojure.test :refer :all]
             [ring.mock.request :refer :all]
             [app.gateway.api :as Api]
             [muuntaja.core :as m]
             [app.infrastructure.person.module :as PersonModule]
-            [app.infrastructure.id.module :as IdModule]))
+            [app.infrastructure.id.repository.deterministic :as DeterministicIdRepository]))
+
+(def deterministic-id-repository (DeterministicIdRepository/create-deterministic-id-repository)) ;; Create repo once
+(def id-service (IdService/create-id-service deterministic-id-repository))
 
 (def dependencies {:personRepository (PersonModule/inMemoryRepository (atom {}))
-                   :idRepository     IdModule/deterministicRepository})
+                   :id-service     id-service})
 (def app (Api/handler (:personRepository dependencies)
-                      (:idRepository dependencies)))
+                      (:id-service dependencies)))
 (def root "/api/persons")
 
 (deftest test-app
@@ -37,4 +41,19 @@
     (let [response (app (request :get root))
           expectedResponse []]
       (is (= 200 (:status response)))
-      (is (= expectedResponse (-> (m/decode-response-body response) :data :persons))))))
+      (is (= expectedResponse (-> (m/decode-response-body response) :data :persons)))))
+  (let [response (app (-> (request :post root)
+                          (json-body {:first_name "Michu" :last_name "Tichu"})))
+        expectedResponse {:id        "2"
+                          :firstName "Michu"
+                          :lastName  "Tichu"}]
+    (is (= 200 (:status response)))
+    (is (= expectedResponse (-> (m/decode-response-body response) :data :person))))
+  (let [response (app (-> (request :post root)
+                          (json-body {:first_name "Michu" :last_name "Tichu"})))
+        expectedResponse {:id        "3"
+                          :firstName "Michu"
+                          :lastName  "Tichu"}]
+    (is (= 200 (:status response)))
+    (is (= expectedResponse (-> (m/decode-response-body response) :data :person))))
+  )
