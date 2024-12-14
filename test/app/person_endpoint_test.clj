@@ -5,12 +5,16 @@
             [app.gateway.api :as Api]
             [muuntaja.core :as m]
             [app.infrastructure.person.module :as PersonModule]
-            [app.infrastructure.id.repository.deterministic :as DeterministicIdRepository]))
+            [app.infrastructure.id.repository.deterministic :as DeterministicIdRepository]
+            [app.domain.person.service :as PersonService]
+            ))
 
 (def deterministic-id-repository (DeterministicIdRepository/create-deterministic-id-repository)) ;; Create repo once
 (def id-service (IdService/create-id-service deterministic-id-repository))
+(def person-in-memory-repository (PersonModule/inMemoryRepository (atom {})))
+(def person-service) (PersonService/create-person-service person-in-memory-repository id-service)
 
-(def dependencies {:personRepository (PersonModule/inMemoryRepository (atom {}))
+(def dependencies {:personRepository person-in-memory-repository
                    :id-service     id-service})
 (def app (Api/handler (:personRepository dependencies)
                       (:id-service dependencies)))
