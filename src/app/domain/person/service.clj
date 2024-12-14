@@ -6,14 +6,14 @@
     [app.domain.person.new-person-command :as NewPersonCommand]
     [app.domain.either :as Either]))
 
-(defn assignId [idRepository newPersonCommand]
-  (let [id (:generate (IdService/create-id-service idRepository))]
+(defn assignId [id-service newPersonCommand]
+  (let [id ((:generate id-service))]
     (NewPersonCommand/assign-id id newPersonCommand)))
 
-(defn save [personRepository idRepository newPersonCommand]
+(defn save [personRepository id-service newPersonCommand]
   (->> newPersonCommand
        (Parser/parse NewPersonCommand/Schema)
-       (Either/map #(assignId idRepository %))
+       (Either/map #(assignId id-service %))
        (Either/flat-map #(PersonRepository/save! personRepository %))))
 
 (defn getAll [personRepository]
