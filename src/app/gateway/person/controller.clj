@@ -8,25 +8,25 @@
     [clojure.core.match :refer [match]]
     [app.domain.either :as either]))
 
-(defn create-person [personRepository id-service request-map]
+(defn create-person [person-service request-map]
   (->> request-map
        (:body-params)
        (Parser/parse ApiInput/NewPersonApiInputSchema)
        (either/map ApiInput/to-NewPersonCommand)
-       (either/flat-map #(PersonService/save personRepository id-service %))
+       (either/flat-map #((:save person-service) %))
        (from-domain-result "person")))
 
-(defn routes [personRepository id-service]
+(defn routes [person-service]
   ["/api"
    ["/persons"
     {:post
      (fn [request-map]
-       (create-person personRepository id-service request-map))
+       (create-person person-service request-map))
      :get
      (fn [_]
-       (response-ok "persons" (PersonService/getAll personRepository)))}]
+       (response-ok "persons" ((:get-all person-service))))}]
    ["/persons/:id"
     {:delete
      (fn [{{:keys [id]} :path-params}]
-       (response-ok "person" (PersonService/deleteById personRepository id)))}
+       (response-ok "person" ((:delete-by-id person-service) id)))}
     ]])
