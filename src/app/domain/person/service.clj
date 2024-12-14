@@ -21,3 +21,9 @@
 
 (defn deleteById [personRepository id]
   ((:delete-by-id personRepository) id))
+
+(defn create-person-service [person-repository id-service]
+  {:assign-id (partial assignId id-service)
+   :save (partial save person-repository id-service)
+   :get-all (partial getAll person-repository)
+   :delete-by-id (partial deleteById person-repository)})
