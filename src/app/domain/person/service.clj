@@ -17,7 +17,7 @@
        (Either/flat-map #((:save! personRepository) %))))
 
 (defn getAll [personRepository]
-  ((:getAll personRepository)))
+  ((:get-all personRepository)))
 
 (defn deleteById [personRepository id]
-  ((:deleteById personRepository) id))
+  ((:delete-by-id personRepository) id))
