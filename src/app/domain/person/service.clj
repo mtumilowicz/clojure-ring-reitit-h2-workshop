@@ -7,7 +7,7 @@
     [app.domain.either :as Either]))
 
 (defn assignId [idRepository newPersonCommand]
-  (let [id (IdService/generate idRepository)]
+  (let [id (:generate (IdService/create-id-service idRepository))]
     (NewPersonCommand/assign-id id newPersonCommand)))
 
 (defn save [personRepository idRepository newPersonCommand]

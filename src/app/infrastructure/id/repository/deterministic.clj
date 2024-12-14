@@ -1,14 +1,10 @@
-(ns app.infrastructure.id.repository.deterministic
-  (:require
-    [app.domain.id.repository :refer [IdRepository]]))
+(ns app.infrastructure.id.repository.deterministic)
 
 (def counter (atom 0))
 
-(defrecord DeterministicIdRepository []
-  IdRepository
-  (generate [_]
-    (swap! counter inc)
-    (str @counter)))
+(defn generate []
+  (swap! counter inc)
+  (str @counter))
 
-(defn create [] (DeterministicIdRepository.))
-
+(defn create-deterministic-id-repository []
+  {:generate generate})
