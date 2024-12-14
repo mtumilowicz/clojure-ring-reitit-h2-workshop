@@ -14,10 +14,10 @@
   (->> newPersonCommand
        (Parser/parse NewPersonCommand/Schema)
        (Either/map #(assignId id-service %))
-       (Either/flat-map #(PersonRepository/save! personRepository %))))
+       (Either/flat-map #((:save! personRepository) %))))
 
 (defn getAll [personRepository]
-  (PersonRepository/getAll personRepository))
+  ((:getAll personRepository)))
 
 (defn deleteById [personRepository id]
-  (PersonRepository/deleteById personRepository id))
+  ((:deleteById personRepository) id))
