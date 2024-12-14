@@ -12,11 +12,11 @@
 (def deterministic-id-repository (DeterministicIdRepository/create-deterministic-id-repository)) ;; Create repo once
 (def id-service (IdService/create-id-service deterministic-id-repository))
 (def person-in-memory-repository (PersonModule/inMemoryRepository (atom {})))
-(def person-service) (PersonService/create-person-service person-in-memory-repository id-service)
+(def person-service (PersonService/create-person-service person-in-memory-repository id-service))
 
-(def dependencies {:personRepository person-in-memory-repository
+(def dependencies {:person-service person-service
                    :id-service     id-service})
-(def app (Api/handler (:personRepository dependencies)
+(def app (Api/handler (:person-service dependencies)
                       (:id-service dependencies)))
 (def root "/api/persons")
 
