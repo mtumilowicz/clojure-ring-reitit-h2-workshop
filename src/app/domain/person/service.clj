@@ -4,24 +4,24 @@
     [app.domain.person.new-person-command :as NewPersonCommand]
     [app.domain.either :as Either]))
 
-(defn assignId [id-service newPersonCommand]
+(defn assign-id [id-service new-person-command]
   (let [id ((:generate id-service))]
-    (NewPersonCommand/assign-id id newPersonCommand)))
+    (NewPersonCommand/assign-id id new-person-command)))
 
-(defn save [personRepository id-service newPersonCommand]
-  (->> newPersonCommand
+(defn save [person-repository id-service new-person-command]
+  (->> new-person-command
        (Parser/parse NewPersonCommand/Schema)
-       (Either/map #(assignId id-service %))
-       (Either/flat-map #((:save! personRepository) %))))
+       (Either/map #(assign-id id-service %))
+       (Either/flat-map #((:save! person-repository) %))))
 
-(defn getAll [personRepository]
-  ((:get-all personRepository)))
+(defn get-all [person-repository]
+  ((:get-all person-repository)))
 
-(defn deleteById [personRepository id]
-  ((:delete-by-id personRepository) id))
+(defn delete-by-id [person-repository id]
+  ((:delete-by-id person-repository) id))
 
 (defn mkService [person-repository id-service]
-  {:assign-id (partial assignId id-service)
+  {:assign-id (partial assign-id id-service)
    :save (partial save person-repository id-service)
-   :get-all (partial getAll person-repository)
-   :delete-by-id (partial deleteById person-repository)})
+   :get-all (partial get-all person-repository)
+   :delete-by-id (partial delete-by-id person-repository)})

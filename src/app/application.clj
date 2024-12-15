@@ -2,9 +2,7 @@
   (:require
     [app.domain.id.service :as IdService]
     [app.domain.person.service :as PersonService]
-    [app.infrastructure.id.repository.deterministic :as DeterministicIdRepository]
     [ring.adapter.jetty :as jetty]
-    [ring.middleware.reload :refer [wrap-reload]]
     [app.gateway.api :as Api]
     [app.infrastructure.app.config :refer [env]]
     [luminus-migrations.core :as migrations]
@@ -21,7 +19,7 @@
                   :where     (str "Uncaught exception on" (.getName thread))}))))
 
 (def uuid-id-repository IdModule/uuidRepository)
-(def id-service (IdService/mkService uuid-id-repository))
+(def id-service (IdService/create-service uuid-id-repository))
 (def person-db-repository PersonModule/dbRepository)
 (def person-service (PersonService/mkService person-db-repository id-service))
 
