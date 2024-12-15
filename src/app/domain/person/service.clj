@@ -1,7 +1,5 @@
 (ns app.domain.person.service
   (:require
-    [app.domain.person.repository :as PersonRepository]
-    [app.domain.id.service :as IdService]
     [app.domain.parser :as Parser]
     [app.domain.person.new-person-command :as NewPersonCommand]
     [app.domain.either :as Either]))

@@ -22,13 +22,13 @@
 
 (def uuid-id-repository IdModule/uuidRepository)
 (def id-service (IdService/mkService uuid-id-repository))
-(def person-in-memory-repository PersonModule/inMemoryRepository)
-(def person-service (PersonService/mkService person-in-memory-repository id-service))
+(def person-db-repository PersonModule/dbRepository)
+(def person-service (PersonService/mkService person-db-repository id-service))
 
 
 (defn -main [& args]
   (mount/start #'app.infrastructure.db.config/*db*)
   (migrations/init (select-keys env [:database-url]))
   (jetty/run-jetty
-    (-> (Api/handler person-service id-service))
+    (-> (Api/handler person-service))
     {:port (:port env)}))
