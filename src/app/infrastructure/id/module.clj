@@ -3,6 +3,6 @@
     [app.infrastructure.id.repository.deterministic :as DeterministicIdRepository]
     [app.infrastructure.id.repository.uuid :as UuidIdRepository]))
 
-(def deterministicRepository (DeterministicIdRepository/create))
+(def deterministic-repository (DeterministicIdRepository/create))
 
-(def uuidRepository (UuidIdRepository/create))
+(def uuid-repository (UuidIdRepository/create))

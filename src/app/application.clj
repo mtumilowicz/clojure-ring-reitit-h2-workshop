@@ -18,14 +18,13 @@
                   :exception ex
                   :where     (str "Uncaught exception on" (.getName thread))}))))
 
-(def uuid-id-repository IdModule/uuidRepository)
-(def id-service (IdService/create-service uuid-id-repository))
-(def person-db-repository PersonModule/dbRepository)
-(def person-service (PersonService/mkService person-db-repository id-service))
 (def services
-  {:id-service id-service
-   :person-service person-service})
-
+  (let [id-repository IdModule/uuid-repository
+        id-service (IdService/create-service id-repository)
+        person-repository PersonModule/db-repository
+        person-service (PersonService/mkService person-repository id-service)]
+    {:person-service person-service
+     :id-service     id-service}))
 (defn -main [& args]
   (mount/start #'app.infrastructure.db.config/*db*)
   (migrations/init (select-keys env [:database-url]))

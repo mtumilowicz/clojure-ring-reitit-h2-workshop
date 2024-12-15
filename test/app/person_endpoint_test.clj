@@ -8,13 +8,13 @@
             [muuntaja.core :as m]
             [ring.mock.request :refer :all]))
 
-(def deterministic-id-repository IdModule/deterministicRepository)
-(def id-service (IdService/create-service deterministic-id-repository))
-(def person-in-memory-repository PersonModule/inMemoryRepository)
-(def person-service (PersonService/mkService person-in-memory-repository id-service))
-
-(def dependencies {:person-service person-service})
-(def app (Api/handler dependencies))
+(def services
+  (let [id-repository IdModule/deterministic-repository
+        id-service (IdService/create-service id-repository)
+        person-repository PersonModule/in-memory-repository
+        person-service (PersonService/mkService person-repository id-service)]
+    {:person-service person-service}))
+(def app (Api/handler services))
 (def root "/api/persons")
 
 (deftest test-app
