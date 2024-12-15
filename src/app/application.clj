@@ -2,14 +2,14 @@
   (:require
     [app.domain.id.service :as IdService]
     [app.domain.person.service :as PersonService]
-    [ring.adapter.jetty :as jetty]
     [app.gateway.api :as Api]
     [app.infrastructure.app.config :refer [env]]
+    [app.infrastructure.id.module :as IdModule]
+    [app.infrastructure.person.module :as PersonModule]
+    [clojure.tools.logging :as log]
     [luminus-migrations.core :as migrations]
     [mount.core :as mount]
-    [clojure.tools.logging :as log]
-    [app.infrastructure.person.module :as PersonModule]
-    [app.infrastructure.id.module :as IdModule]))
+    [ring.adapter.jetty :as jetty]))
 
 (Thread/setDefaultUncaughtExceptionHandler
   (reify Thread$UncaughtExceptionHandler

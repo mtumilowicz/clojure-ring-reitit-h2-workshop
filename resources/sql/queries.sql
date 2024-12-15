@@ -1,10 +1,13 @@
 -- :name create-person! :insert
 INSERT INTO person
-(id, first_name, last_name)
+    (id, first_name, last_name)
 VALUES (:id, :firstName, :lastName)
 
 -- :name get-persons :? :*
-SELECT * FROM person
+SELECT *
+FROM person
 
 -- :name delete-by-id! :! :n
-DELETE FROM person WHERE id=:id
+DELETE
+FROM person
+WHERE id = :id

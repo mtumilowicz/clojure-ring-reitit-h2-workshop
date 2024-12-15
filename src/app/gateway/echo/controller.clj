@@ -1,7 +1,7 @@
 (ns app.gateway.echo.controller
   (:require
-    [ring.util.http-response :as response]
-    [app.gateway.middleware :refer [wrap-params]]))
+    [app.gateway.middleware :refer [wrap-params]]
+    [ring.util.http-response :as response]))
 
 (defn routes [_]
   ["/echo/:id"

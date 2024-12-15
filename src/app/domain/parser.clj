@@ -1,8 +1,8 @@
 (ns app.domain.parser
   (:require
-    [struct.core :as st]
+    [app.domain.either :as either]
     [clojure.core.match :refer [match]]
-    [app.domain.either :as either]))
+    [struct.core :as st]))
 
 (defn parse [schema map]
   (match (st/validate map schema)
