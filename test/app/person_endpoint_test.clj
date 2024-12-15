@@ -1,5 +1,6 @@
 (ns app.person-endpoint-test
   (:require [app.domain.id.service :as IdService]
+            [app.infrastructure.id.module :as IdModule]
             [clojure.test :refer :all]
             [ring.mock.request :refer :all]
             [app.gateway.api :as Api]
@@ -9,7 +10,7 @@
             [app.domain.person.service :as PersonService]
             ))
 
-(def deterministic-id-repository (DeterministicIdRepository/create-deterministic-id-repository)) ;; Create repo once
+(def deterministic-id-repository IdModule/deterministicRepository) ;; Create repo once
 (def id-service (IdService/create-id-service deterministic-id-repository))
 (def person-in-memory-repository (PersonModule/inMemoryRepository (atom {})))
 (def person-service (PersonService/create-person-service person-in-memory-repository id-service))
