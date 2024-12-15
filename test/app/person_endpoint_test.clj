@@ -6,7 +6,6 @@
             [app.gateway.api :as Api]
             [muuntaja.core :as m]
             [app.infrastructure.person.module :as PersonModule]
-            [app.infrastructure.id.repository.deterministic :as DeterministicIdRepository]
             [app.domain.person.service :as PersonService]
             ))
 
