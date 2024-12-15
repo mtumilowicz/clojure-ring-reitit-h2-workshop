@@ -10,7 +10,7 @@
             ))
 
 (def deterministic-id-repository IdModule/deterministicRepository)
-(def id-service (IdService/mkService deterministic-id-repository))
+(def id-service (IdService/create-service deterministic-id-repository))
 (def person-in-memory-repository PersonModule/inMemoryRepository)
 (def person-service (PersonService/mkService person-in-memory-repository id-service))
 

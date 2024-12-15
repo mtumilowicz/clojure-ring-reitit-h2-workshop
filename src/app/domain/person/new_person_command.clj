@@ -8,5 +8,5 @@
 
 (defrecord NewPersonCommand [firstName lastName])
 
-(defn assign-id [id newPersonCommand]
-  (merge newPersonCommand {:id id}))
+(defn assign-id [id new-person-command]
+  (merge new-person-command {:id id}))
