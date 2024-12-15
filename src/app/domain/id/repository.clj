@@ -1,4 +1,4 @@
 (ns app.domain.id.repository)
 
-(defprotocol IdRepository
-  (generate [this]))
+(defn create [generate]
+  {:generate generate })
