@@ -7,14 +7,15 @@
             [reitit.ring.middleware.dev]
             [ring.util.http-response :as response]))
 
-(defn routes [person-service]
-  [(EchoController/routes [])
-   (PersonController/routes person-service)])
+(defn routes [services]
+  (let [{:keys [person-service]} services]
+    [(EchoController/routes [])
+     (PersonController/routes person-service)]))
 
 
-(defn handler [person-service]
+(defn handler [services]
   (reitit/ring-handler
-    (reitit/router (routes person-service)
+    (reitit/router (routes services)
                    {:exception pretty/exception
                     :data      {:middleware [wrap-formats]}})
     (reitit/create-default-handler

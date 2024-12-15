@@ -14,7 +14,7 @@
 (def person-service (PersonService/mkService person-in-memory-repository id-service))
 
 (def dependencies {:person-service person-service})
-(def app (Api/handler (:person-service dependencies)))
+(def app (Api/handler dependencies))
 (def root "/api/persons")
 
 (deftest test-app
