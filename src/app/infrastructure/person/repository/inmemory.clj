@@ -1,8 +1,7 @@
 (ns app.infrastructure.person.repository.inmemory
   (:require
     [app.domain.either :as either]
-    [app.domain.person.repository :as person-repository]
-    ))
+    [app.domain.person.repository :as person-repository]))
 
 (defn save-person! [map obj]
   (->> (either/safe-execute {:operation     (swap! map assoc-in [(keyword (str (:id obj)))] obj)

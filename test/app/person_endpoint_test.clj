@@ -6,8 +6,7 @@
             [app.infrastructure.person.module :as PersonModule]
             [clojure.test :refer :all]
             [muuntaja.core :as m]
-            [ring.mock.request :refer :all]
-            ))
+            [ring.mock.request :refer :all]))
 
 (def deterministic-id-repository IdModule/deterministicRepository)
 (def id-service (IdService/create-service deterministic-id-repository))
