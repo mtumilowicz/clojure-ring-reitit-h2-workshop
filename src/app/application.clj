@@ -1,5 +1,8 @@
 (ns app.application
   (:require
+    [app.domain.id.service :as IdService]
+    [app.domain.person.service :as PersonService]
+    [app.infrastructure.id.repository.deterministic :as DeterministicIdRepository]
     [ring.adapter.jetty :as jetty]
     [ring.middleware.reload :refer [wrap-reload]]
     [app.gateway.api :as Api]
@@ -17,12 +20,15 @@
                   :exception ex
                   :where     (str "Uncaught exception on" (.getName thread))}))))
 
-(def dependencies {:personRepository PersonModule/dbRepository
-                   :idRepository     IdModule/uuidRepository})
+(def uuid-id-repository IdModule/uuidRepository) ;; Create repo once
+(def id-service (IdService/create-id-service uuid-id-repository))
+(def person-in-memory-repository (PersonModule/inMemoryRepository (atom {})))
+(def person-service (PersonService/create-person-service person-in-memory-repository id-service))
+
 
 (defn -main [& args]
   (mount/start #'app.infrastructure.db.config/*db*)
   (migrations/init (select-keys env [:database-url]))
   (jetty/run-jetty
-    (-> (Api/handler dependencies))
+    (-> (Api/handler person-service id-service))
     {:port (:port env)}))
