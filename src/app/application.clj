@@ -20,10 +20,10 @@
                   :exception ex
                   :where     (str "Uncaught exception on" (.getName thread))}))))
 
-(def uuid-id-repository IdModule/uuidRepository) ;; Create repo once
-(def id-service (IdService/create-id-service uuid-id-repository))
-(def person-in-memory-repository (PersonModule/inMemoryRepository (atom {})))
-(def person-service (PersonService/create-person-service person-in-memory-repository id-service))
+(def uuid-id-repository IdModule/uuidRepository)
+(def id-service (IdService/mkService uuid-id-repository))
+(def person-in-memory-repository PersonModule/inMemoryRepository)
+(def person-service (PersonService/mkService person-in-memory-repository id-service))
 
 
 (defn -main [& args]

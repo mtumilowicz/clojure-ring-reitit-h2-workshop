@@ -19,7 +19,7 @@
   (swap! map dissoc (keyword (str id)))
   {:id id})
 
-(defn create-inmemory-repository []
+(defn create []
   (let [map (atom {})]
     (person-repository/create
       (partial save-person! map)

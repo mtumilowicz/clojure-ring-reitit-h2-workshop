@@ -7,4 +7,4 @@
   (str (UUID/randomUUID)))
 
 (defn create []
-  {:generate generate})
+  (id-repository/create generate))

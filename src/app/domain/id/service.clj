@@ -3,5 +3,5 @@
 (defn generate [id-repository]
   (:generate id-repository))
 
-(defn create-id-service [id-repository]
+(defn mkService [id-repository]
   {:generate (generate id-repository)})

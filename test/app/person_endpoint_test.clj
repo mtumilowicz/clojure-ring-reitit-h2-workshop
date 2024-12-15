@@ -10,10 +10,10 @@
             [app.domain.person.service :as PersonService]
             ))
 
-(def deterministic-id-repository IdModule/deterministicRepository) ;; Create repo once
-(def id-service (IdService/create-id-service deterministic-id-repository))
-(def person-in-memory-repository (PersonModule/inMemoryRepository (atom {})))
-(def person-service (PersonService/create-person-service person-in-memory-repository id-service))
+(def deterministic-id-repository IdModule/deterministicRepository)
+(def id-service (IdService/mkService deterministic-id-repository))
+(def person-in-memory-repository PersonModule/inMemoryRepository)
+(def person-service (PersonService/mkService person-in-memory-repository id-service))
 
 (def dependencies {:person-service person-service
                    :id-service     id-service})
