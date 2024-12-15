@@ -1,9 +1,9 @@
 (ns app.gateway.person.controller
   (:require
+    [app.domain.either :as either]
     [app.domain.parser :as Parser]
-    [app.gateway.person.input :as ApiInput]
     [app.gateway.output :refer :all]
-    [app.domain.either :as either]))
+    [app.gateway.person.input :as ApiInput]))
 
 (defn create-person [person-service request-map]
   (->> request-map

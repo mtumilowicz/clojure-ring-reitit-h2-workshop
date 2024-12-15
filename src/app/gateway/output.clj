@@ -1,6 +1,6 @@
 (ns app.gateway.output
-  (:require [ring.util.http-response :as response]
-            [app.domain.either :as either]))
+  (:require [app.domain.either :as either]
+            [ring.util.http-response :as response]))
 
 (defn success [key data]
   {:status "success" :data {key data}})

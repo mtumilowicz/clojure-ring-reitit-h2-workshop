@@ -1,8 +1,8 @@
 (ns app.infrastructure.person.repository.db
   (:require
     [app.domain.either :as either]
-    [app.domain.person.repository :as person-repository]
     [app.domain.person.person :as Person]
+    [app.domain.person.repository :as person-repository]
     [app.infrastructure.db.config :as db]
     [clojure.set :as set]))
 

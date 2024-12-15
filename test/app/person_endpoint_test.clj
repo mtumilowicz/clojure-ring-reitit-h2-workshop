@@ -1,12 +1,12 @@
 (ns app.person-endpoint-test
   (:require [app.domain.id.service :as IdService]
-            [app.infrastructure.id.module :as IdModule]
-            [clojure.test :refer :all]
-            [ring.mock.request :refer :all]
-            [app.gateway.api :as Api]
-            [muuntaja.core :as m]
-            [app.infrastructure.person.module :as PersonModule]
             [app.domain.person.service :as PersonService]
+            [app.gateway.api :as Api]
+            [app.infrastructure.id.module :as IdModule]
+            [app.infrastructure.person.module :as PersonModule]
+            [clojure.test :refer :all]
+            [muuntaja.core :as m]
+            [ring.mock.request :refer :all]
             ))
 
 (def deterministic-id-repository IdModule/deterministicRepository)

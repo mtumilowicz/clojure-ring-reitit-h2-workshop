@@ -1,8 +1,8 @@
 (ns app.infrastructure.db.config
   (:require
-    [mount.core :refer [defstate]]
+    [app.infrastructure.app.config :refer [env]]
     [conman.core :as conman]
-    [app.infrastructure.app.config :refer [env]]))
+    [mount.core :refer [defstate]]))
 
 (defstate ^:dynamic *db*
           :start (conman/connect! {:jdbc-url (env :database-url)})

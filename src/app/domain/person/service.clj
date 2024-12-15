@@ -1,8 +1,8 @@
 (ns app.domain.person.service
   (:require
+    [app.domain.either :as Either]
     [app.domain.parser :as Parser]
-    [app.domain.person.new-person-command :as NewPersonCommand]
-    [app.domain.either :as Either]))
+    [app.domain.person.new-person-command :as NewPersonCommand]))
 
 (defn assign-id [id-service new-person-command]
   (let [id ((:generate id-service))]
@@ -21,7 +21,7 @@
   ((:delete-by-id person-repository) id))
 
 (defn mkService [person-repository id-service]
-  {:assign-id (partial assign-id id-service)
-   :save (partial save person-repository id-service)
-   :get-all (partial get-all person-repository)
+  {:assign-id    (partial assign-id id-service)
+   :save         (partial save person-repository id-service)
+   :get-all      (partial get-all person-repository)
    :delete-by-id (partial delete-by-id person-repository)})

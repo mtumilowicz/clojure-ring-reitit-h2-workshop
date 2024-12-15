@@ -1,11 +1,11 @@
 (ns app.gateway.api
-  (:require [reitit.ring :as reitit]
-            [ring.util.http-response :as response]
+  (:require [app.gateway.echo.controller :as EchoController]
+            [app.gateway.middleware :refer [wrap-formats]]
             [app.gateway.person.controller :as PersonController]
-            [app.gateway.echo.controller :as EchoController]
             [reitit.dev.pretty :as pretty]
+            [reitit.ring :as reitit]
             [reitit.ring.middleware.dev]
-            [app.gateway.middleware :refer [wrap-formats]]))
+            [ring.util.http-response :as response]))
 
 (defn routes [person-service]
   [(EchoController/routes [])
@@ -16,7 +16,7 @@
   (reitit/ring-handler
     (reitit/router (routes person-service)
                    {:exception pretty/exception
-                    :data {:middleware [wrap-formats]}})
+                    :data      {:middleware [wrap-formats]}})
     (reitit/create-default-handler
       {:not-found
        (constantly (response/not-found "404 - Page not found"))
